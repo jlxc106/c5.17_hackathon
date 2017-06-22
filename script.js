@@ -71,6 +71,8 @@ function Game() {
                         }
                         else {
                             for (var b = 0; b < this.player1.length; b++) {
+                                // this.horizontal(b, selectDiv, this.player1, "white-disc");
+                                // this.vertical(b, selectDiv, this.player1, "white-disc");
                                 this.searchSpots(selectDiv, "white-disc", "black-disc");
                             }
                         }
@@ -112,7 +114,6 @@ function Game() {
             }
         }
     };
-
     this.searchSpots = function (selectDiv, disc_color, this_color) {   //searchSpots function
         var r = parseInt(selectDiv.attr("row"));
         var c = col_list.indexOf(selectDiv.attr("col"));
@@ -147,6 +148,7 @@ function Game() {
         }
     };
     this.clickHandler = function () {    //click handler function
+        //if(this) isn't in the array: don't do this function
         var bool = false;
         var x = $(this).attr("col");
         var y = parseInt($(this).attr("row"));
@@ -254,21 +256,24 @@ function Game() {
         }
     };
     this.gameOver = function(){     //gameover function
+        modal = $('#myModal');
+        modal2 = $('#myModal2');
         if(this.player1.length > this.player2.length){
-            alert("SITH WINS");
             this.turn = self.player_list[0];
             this.symbolAppear();
+            $('.modal').show();
         }
         else{
-            alert("JEDI WINS");
             this.turn = self.player_list[1];
             this.symbolAppear();
+            $('.modal2').show();
         }
         this.resetAll();
     };
     this.displayDiscs = function(){    //display function
         $(".player1-value").html(this.player1.length);
         $(".player2-value").html(this.player2.length);
+
     };
     this.resetAll = function(){     //reset function
         console.log("reset is being clicked");
