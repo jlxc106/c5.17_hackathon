@@ -6,7 +6,21 @@ function createObj(){
     generateSpots();
     gameObj = new Game();
     gameObj.init();
+    $(".audio-btn").click(audioCallback);
 }
+
+function audioCallback(){
+    var audio_dom = document.getElementById('sw_audio');
+    if(audio_dom.paused){
+        audio_dom.play();
+        $(".audio-btn").html('Pause Audio')
+    }
+    else{
+        audio_dom.pause();
+        $(".audio-btn").html('Play Audio')
+    }
+}
+
 function generateSpots(){
     for (var i = 1; i < 9; i++) { //loop to create rows for board
         $("<div>").attr("id","row"+i).addClass("rows").appendTo("#back-board");
@@ -30,12 +44,11 @@ function Game() {
     //functions down here
     var goodImg = $("#jedi-on");
     var badImg = $("#sith-on");
+
     this.init = function () {
         //start with player 1 (sith) ready
         $(badImg).removeClass("hiddenClass");
-        console.log("jedi hide");
         $(goodImg).addClass("hiddenClass");
-        console.log("sith's turn");
         //positions 4,5 give them black/white discs
         this.player2.push(array_list[3][3].addClass('white-disc'));
         this.player1.push(array_list[3][4].addClass('black-disc'));
@@ -47,7 +60,9 @@ function Game() {
         this.symbolAppear();
         $(".rows > div").click(self.clickHandler);
         $(".reset").click(self.resetAll)
+        $(".modal").click(self.closeModal);
     };
+
     this.legalMoves = function (index) {    //legal moves function
         var colNum;
         var rowNum;
@@ -71,8 +86,6 @@ function Game() {
                         }
                         else {
                             for (var b = 0; b < this.player1.length; b++) {
-                                // this.horizontal(b, selectDiv, this.player1, "white-disc");
-                                // this.vertical(b, selectDiv, this.player1, "white-disc");
                                 this.searchSpots(selectDiv, "white-disc", "black-disc");
                             }
                         }
@@ -114,7 +127,7 @@ function Game() {
             }
         }
     };
-    this.searchSpots = function (selectDiv, disc_color, this_color) {   //searchSpots function
+    this.searchSpots = function (selectDiv, disc_color, this_color) {
         var r = parseInt(selectDiv.attr("row"));
         var c = col_list.indexOf(selectDiv.attr("col"));
         var diag = [[0,1], [0,-1],[-1,0],[1,0],[-1,-1],[1,-1],[-1,1],[1,1]];
@@ -159,7 +172,6 @@ function Game() {
             }
         }
         if (bool) {
-            //click is working
             if (self.turn == self.player_list[0]) { // player 1's turn
                 $(this).addClass("black-disc");
                 self.player1.push($(this));
@@ -256,20 +268,25 @@ function Game() {
         }
     };
     this.gameOver = function(){     //gameover function
-        modal = $('#myModal');
-        modal2 = $('#myModal2');
-        if(this.player1.length > this.player2.length){
+        // modal = $('#myModal');
+        // modal2 = $('#myModal2');
+        if(this.player1.length > this.player2.length){ //black win
             this.turn = self.player_list[0];
             this.symbolAppear();
-            $('.modal').show();
+            $('#myModal').show();
         }
-        else{
+        else{  //white win
             this.turn = self.player_list[1];
             this.symbolAppear();
-            $('.modal2').show();
+            $('#myModal2').show();
         }
         this.resetAll();
     };
+    
+    this.closeModal = function(){
+        $(".modal").hide();
+    }
+
     this.displayDiscs = function(){    //display function
         $(".player1-value").html(this.player1.length);
         $(".player2-value").html(this.player2.length);
