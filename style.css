@@ -111,7 +111,7 @@ body{
 #reset-button{
     margin-top: 20px;
 }
-.reset{
+.button{
     width: 200px;
     height: 50px;
     border-radius: 30px;
@@ -121,7 +121,7 @@ body{
     background-color: black;
     display: inline;
 }
-.reset:hover {
+.button:hover {
     background-color: ghostwhite;
     color: black;
     text-shadow:
@@ -149,7 +149,6 @@ body{
 .hiddenClass {
     display: none;
 }
-
 .allowedSpot{
     background-image: url("images/allowed_pic.gif");
     background-size: contain;
@@ -159,9 +158,6 @@ body{
     background-image: url("images/vader_dodge.gif");
     background-size: cover;
 }
-
-/*modal inclusion*/
-
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
