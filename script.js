@@ -6,18 +6,18 @@ function createObj(){
     generateSpots();
     gameObj = new Game();
     gameObj.init();
-    $(".audio-btn").click(audioCallback);
+    $(".audio-btn").click(audioCallback); 
 }
 
 function audioCallback(){
     var audio_dom = document.getElementById('sw_audio');
     if(audio_dom.paused){
         audio_dom.play();
-        $(".audio-btn").html('Pause Audio')
+        $(".audio-btn").html('Pause Audio') 
     }
     else{
         audio_dom.pause();
-        $(".audio-btn").html('Play Audio')
+        $(".audio-btn").html('Play Audio') 
     }
 }
 
