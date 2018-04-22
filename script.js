@@ -220,7 +220,7 @@ function Game() {
                             arrayOfFlips = arrayOfFlips.concat(path);
                             break;
                         }
-                    }
+                    } 
                 }
             }
         }
