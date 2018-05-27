@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <title>Othello game</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+        crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/script.js"></script>
+    <link rel="shortcut icon" type="image/x-icon" href="css/images/favicon.jpeg"/>
+</head>
+
+<body>
+    <audio id="sw_audio" class="audio_class" loop preload="auto" src="css/audio/Star-Wars-Duel-of-the-Fates.mp3">
+    </audio>
+    <h2 class="game-title">Othello</h2>
+    <h3 class="game-subtitle">Jedi vs. Sith</h3>
+    <div class="game-contents">
+        <div class="stats_container" id="stats_container1">
+            <div class="player-info" id="player2-info">
+                <img id="player-imageTwo" src="css/images/jedi.jpg" alt="jedi-on">
+                <p class="player_two-name">Jedi:</p>
+                <p class="player2-value"></p>
+                <img id="jedi-on" src="css/images/jedi1.png" alt="jedi-player2">
+            </div>
+        </div>
+        <div id="back-board"></div>
+        <div class="stats_container" id="stats_container2">
+            <div class="player-info" id="player1-info">
+                <img id="player-imageOne" src="css/images/dark_jedi.jpg" alt="darkJedi-player1">
+                <p class="player_one-name">Sith:</p>
+                <p class="player1-value"></p>
+                <img id="sith-on" src="css/images/Sith_symbol.png" alt="sith-player1">
+            </div>
+        </div>
+        <div id="reset-button">
+            <button type="button" class="button reset">RESET</button>
+        </div>
+        <div>
+            <button class='button btn btn-light audio-btn'>Play Audio</button>
+        </div>
+    </div>
+    <div id="myModal" class="modal">
+        <div class="modal-content"></div>
+    </div>
+    <div id="myModal2" class="modal">
+        <div class="modal-content2"></div>
+    </div>
+    </div>
+
+</body>
+
+</html>
