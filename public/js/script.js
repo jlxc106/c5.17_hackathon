@@ -3,11 +3,26 @@ var gameObj;
 var col_list = ["A","B", "C", "D", "E", "F", "G" ,"H"];
 var array_list = [[],[],[],[],[],[],[],[]];
 function createObj(){
+    controlGameType(window.location.search);
     generateSpots();
     gameObj = new Game();
     gameObj.init();
     $(".audio-btn").click(audioCallback);
 }
+
+function controlGameType(search){
+    const onePlayer = "?numPlayers=1"
+    const twoPlayer = "?numPlayers=2"
+    switch(search){
+        case onePlayer:
+            
+        case twoPlayer:
+
+        default:
+            throw new Error('invalid game mode');
+    }
+}
+
 
 function audioCallback(){
     var audio_dom = document.getElementById('sw_audio');
@@ -42,13 +57,13 @@ function Game() {
     this.turn = null;
     this.legal_moves_array = [];     //this is for legal moves
 
-    var goodImg = $("#jedi-on");
+    var alternateHideImg = $("#jedi-on");
     var badImg = $("#sith-on");
 
     this.init = function () {
         //start with player 1 (sith) ready
         $(badImg).removeClass("hiddenClass");
-        $(goodImg).addClass("hiddenClass");
+        $(alternateHideImg).addClass("hiddenClass");
         //positions 4,5 give them black/white discs
         this.player2.push(array_list[3][3].addClass('white-disc'));
         this.player1.push(array_list[3][4].addClass('black-disc'));
@@ -240,7 +255,7 @@ function Game() {
         }
         // console.log("arrayOfFlips: ", arrayOfFlips);
     };
-    var goodImg = $("#jedi-on");
+    var alternateHideImg = $("#jedi-on");
     var badImg = $("#sith-on");
     this.symbolAppear = function(){    //image appears under player function
         var jediImg = $("#player-imageTwo");
@@ -248,7 +263,7 @@ function Game() {
         var statsOne = $("#stats_container1");
         var statsTwo = $("#stats_container2");
         if (self.turn == self.player_list[1]){
-            $(goodImg).removeClass("hiddenClass");
+            $(alternateHideImg).removeClass("hiddenClass");
             $(sithImg).css("opacity", "0.7");
             $(statsTwo).css("opacity", "0.5");
             //sith step down
@@ -261,7 +276,7 @@ function Game() {
             $(jediImg).css("opacity", "0.7");
             $(statsOne).css("opacity", "0.5");
             //jedi step down
-            $(goodImg).addClass("hiddenClass");
+            $(alternateHideImg).addClass("hiddenClass");
             $(sithImg).css("opacity", "1");
             $(statsTwo).css("opacity", "1");
             //sith's turn

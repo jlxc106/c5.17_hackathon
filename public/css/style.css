@@ -10,10 +10,66 @@
     font-family: starwarsmain;
     src: url(font/starwarsmain.ttf);
 }
+
+#index-body{
+    background: skyblue;
+    font-size: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+#center-container{
+    width: 40vw;
+    /* height: fit-content; */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+}
+
+.btn-choose-game{
+    font-family: Helvetica;
+    font-size: 30px;
+    font-weight: bold;
+    width: 97%;
+    display: block;
+    height: 15vh;
+    margin: 3% auto;
+}
+
+#center-container >  div{
+    width: 100%;
+    /* height: 100%; */
+    margin: 3px auto 3px;
+}
+
+#select-game-type, #btn-select-game-mode{
+    display: none;
+}
+
+#btn-select-game-mode{
+    position: absolute;
+    top: 29%;
+    left: 33.5%;
+    transform: translate(-50%, -50%);
+    font-size: 30px;
+}
+
+#return-img{
+    width: 30px;
+}
+
+#index-body a{
+    text-decoration: none;
+}
+
 body{
     font-size: 0;
-    width: 1200px;
-    height: 800px;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
     margin: 0 auto;
     background-image: url(images/forestbackground.jpg);
     background-size: cover;
@@ -141,12 +197,12 @@ body{
     background-size: cover;
     background-repeat: no-repeat;
 }
-#jedi-on,
-#sith-on {
+#jedi-turn-marker,
+#sith-turn-marker {
     width: 125px;
     height: auto;
 }
-.hiddenClass {
+.alternateHideImg {
     display: none;
 }
 .allowedSpot{

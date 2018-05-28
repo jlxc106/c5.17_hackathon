@@ -7,7 +7,8 @@
 
 ## Change log
 
-### May 28, 2018
+### May 27, 2018
 * initial commit
 * directory restructuring/cleaning
 * basic express/nodejs setup
+
