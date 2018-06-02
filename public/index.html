@@ -16,6 +16,7 @@
         crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="css/style.css">
+    <script src="/socket.io/socket.io.js"></script>
     <!-- <script src="js/script.js"></script> -->
     <link rel="shortcut icon" type="image/x-icon" href="css/images/favicon.jpeg" />
 </head>
@@ -25,15 +26,34 @@
         <div id="select-game">
             <button class="btn btn-primary btn-choose-game btn-othello" type="button">Othello</button>
             <!-- <a href="othello.html"><button class="btn btn-primary btn-choose-game" type="button">Othello</button></a> -->
-            <button class="btn btn-primary btn-choose-game btn-chess" type="button" disabled>Coming soontm - Chess</button>
+            <button class="btn btn-primary btn-choose-game btn-chess" type="button" disabled data-toggle="tooltip" title="coming soonTM">Chess</button>
         </div>
         <div id="select-game-type">
-            <a href="othello.html?numPlayers=1"><button class="btn btn-primary btn-choose-game othello-one-player" type="button">Single Player</button></a>
-            <a href="othello.html?numPlayers=2"><button class="btn btn-primary btn-choose-game othello-two-player" type="button">Two Player</button></a>
+            <form action="/othello.html">
+                <button class="btn btn-primary btn-choose-game othello-one-player" name="numPlayers" value="1">Single Player</button>
+                <button class="btn btn-primary btn-choose-game othello-one-player" name="numPlayers" value="1" disabled data-toggle="tooltip"
+                    title="coming soonTM">Play AI</button>
+                <button class="btn btn-primary btn-choose-game othello-two-player" name="numPlayers" value="2" type="button">Two Player</button>
+            </form>
+            <!-- <a href="othello.html?numPlayers=1"><button class="btn btn-primary btn-choose-game othello-one-player" type="button">Single Player</button></a>
+            <a href="othello.html?numPlayers=2"><button class="btn btn-primary btn-choose-game othello-two-player" type="button">Two Player</button></a> -->
+        </div>
+        <div id="collect-player-info">
+            <form id="user-info-form">
+                <div class="form-field">
+                    <label for="">Display name</label>
+                    <input id="input-name" type="text" name="name" autofocus>
+                    <span id="invalid-name-warning">invalid user name</span>
+                </div>
+                <button id="submit-user-info" class="btn btn-primary" type="button">Find a game</button>
+
+            </form>
         </div>
     </div>
-    <button id="btn-select-game-mode" class="btn btn-danger"><span><img id="return-img" src="css/images/return.png"/>Back</span></button>
-
+    <button id="btn-select-game-mode" class="btn btn-danger">
+        <span>
+            <img id="return-img" src="css/images/return.png" />Back</span>
+    </button>
     <script src="js/index-script.js"></script>
 </body>
 

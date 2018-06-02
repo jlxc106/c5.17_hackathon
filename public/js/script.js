@@ -1,3 +1,5 @@
+//deprecated - see script_mvc.js
+
 $(document).ready(createObj);
 var gameObj;
 var col_list = ["A","B", "C", "D", "E", "F", "G" ,"H"];

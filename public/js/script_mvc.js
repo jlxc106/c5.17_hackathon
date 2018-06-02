@@ -1,3 +1,23 @@
+var socket = io();
+
+var userId;
+
+socket.on('connect', function(){
+  console.log('connected to server')
+  const id = window.localStorage.getItem('id') ? window.localStorage.getItem('id') : undefined;
+  if(id === undefined){
+    console.log('unable to identify user');
+    window.location = 'index.html';
+    return;
+  }
+  socket.emit('validateUser', {id}, function(err, response){
+      // console.log(res);
+    if(err){
+      console.log(err);
+      window.location = 'index.html';
+    }
+    });
+})
 
 var Model = {
   gameInstance: {},
@@ -14,9 +34,9 @@ var Model = {
       case onePlayer:
         return 1;
       case twoPlayer:
-        return 2;
       default:
-        throw new Error('invalid game mode');
+        return 2;
+      // throw new Error('invalid game mode');
     }
   },
   col_list: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
@@ -35,9 +55,9 @@ var Model = {
     var badImg = $('#sith-turn-marker');
 
     this.init = function(gameType) {
-      if(gameType === 1){
+      if (gameType === 1) {
         //trigger something here
-      }else if(gameType === 2){
+      } else if (gameType === 2) {
         //trigger 2 player game here
       }
       console.log(this);
@@ -389,6 +409,7 @@ var Model = {
 };
 
 var View = {
+
   handlePostModelInit: function(self) {
     $('.rows > div').click(self.clickHandler);
     $('.reset').click(self.resetAll);
@@ -426,16 +447,52 @@ var View = {
       audio_dom.pause();
       $('.audio-btn').html('Play Audio');
     }
+  },
+
+  disableChat: function(){
+    console.log('1 player mode');
+    $('.chat').css('display', 'none');
+    $('.othello').removeClass('col-md-9').addClass('col-md-12');
+    // $().
   }
+
 };
 
 var Controller = {
-  gameObj: {},
   handleOnLoad: function() {
     $('.audio-btn').click(View.audioCallback);
     View.generateSpots();
-    Model.init();
+    Controller.handleGameType();
+    // Model.init();
+  },
+
+  handleGameType: function() {
+    let parameter = window.location.search;
+    if (parameter === '?numPlayers=1') {
+      View.disableChat();
+      Model.init();
+    } else if (parameter.includes('?numPlayers=2')) {
+      Controller.handleChat();
+      //let server handle game logic
+    }
+    else{
+      throw new Error('invalid game');
+    }
+  },
+
+  handleChat: function(){
+    $('#message-form').on('submit', function(event){
+      event.preventDefault();
+      console.log(event);
+      var message = $('#input_message').val().trim();
+      if(message.length>0){
+        socket.emit('newMessage', {"id": userId , message},function(){
+          $('#input_message').val('');
+        })
+      }
+    })
   }
+
 };
 
 $(document).ready(Controller.handleOnLoad);

@@ -45,15 +45,56 @@
     margin: 3px auto 3px;
 }
 
-#select-game-type, #btn-select-game-mode{
+#select-game-type, #btn-select-game-mode, #collect-player-info{
     display: none;
+}
+
+#collect-player-info{
+    font-size: 30px;
+}
+
+#collect-player-info form{
+    margin: 5px auto 5px;
+    width: 80%;
+    padding: 10px;
+}
+
+#input-name{
+    background-color:  #f2f2f2;
+    border: 1px solid black;
+}
+
+#invalid-name-warning{
+    display: none;
+    font-size: 20px;
+    color: red;
+}
+
+#collect-player-info button{
+    display: block;
+    margin: 10px auto 5px;
+}
+
+.soontm-tooltip{
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: white;
+    text-align: center;
+    position: absolute;
+    padding: 5px 0;
+    z-index: 3;
+}
+
+.display-tooltip:hover + .soontm-tooltip{
+    visibility: visible;
 }
 
 #btn-select-game-mode{
     position: absolute;
-    top: 29%;
+    /* top: 29%;
     left: 33.5%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); */
     font-size: 30px;
 }
 
@@ -67,9 +108,9 @@
 
 body{
     font-size: 0;
-    width: 100vw;
+    /* width: 100vw; */
     height: 100vh;
-    overflow: hidden;
+    overflow-y: auto;
     margin: 0 auto;
     background-image: url(images/forestbackground.jpg);
     background-size: cover;
@@ -93,7 +134,7 @@ body{
 .game-subtitle{
     font-family: starwarsmain;
     font-size: 40px;
-    margin: 10px 0 20px;
+    margin: 10px 0 10px;
     text-shadow:
             3px 3px white,
             -3px 3px white,
@@ -102,8 +143,13 @@ body{
             3px 3px 5px white;
 }
 #back-board{
-    display: inline-block;
+    display: block;
+    margin: 0 auto 0;
 }
+.game-contents > div:nth-child(2){
+    overflow:auto;
+}
+
 #back-board > div > div{
     background-color: #27660c;
     border: 2px solid black;
@@ -115,19 +161,19 @@ body{
     text-align: center;
 }
 .stats_container{
-    width: 165px;
-    height: 250px;
+    /* width: 165px; */
+    height: 200px;
     position: relative;
     display: inline-block;
     border-radius: 10px;
     text-align: center;
     padding: 10px;
-    margin: 0 20px;
-    bottom: 198px;
+    /* margin: 0 20px; */
+    /* bottom: 198px; */
 }
-#stats_container1{
+/* #stats_container1{
     bottom: 193px;
-}
+} */
 .player-info{
     font-size: 20px;
     font-weight: bold;
@@ -166,9 +212,9 @@ body{
 }
 #reset-button{
     margin-top: 20px;
+    display: inline-block;
 }
 .button{
-    width: 200px;
     height: 50px;
     border-radius: 30px;
     font-size: 30px;
@@ -197,11 +243,11 @@ body{
     background-size: cover;
     background-repeat: no-repeat;
 }
-#jedi-turn-marker,
+/* #jedi-turn-marker,
 #sith-turn-marker {
-    width: 125px;
+    width: 60px;
     height: auto;
-}
+} */
 .alternateHideImg {
     display: none;
 }
@@ -267,4 +313,64 @@ body{
     position: absolute;
     left: 10%;
     top: 10%;
+}
+
+.chat-div{
+    background: white;
+    /* height: 100vw; */
+    width: 100%;
+    margin: 0 3px 3px 3px;
+}
+
+.chat-header{
+    padding: 3px;
+    width: 100%;
+    background: #e6e6e6;
+    font-size: 30px;
+    color: black;
+    margin: 3px 3px 0px 3px;
+}
+
+.chat-header > p {
+    text-align: center;
+    margin: 0;
+}
+
+#messages{
+    height: 90vh;
+}
+
+.chat__footer{
+    font-size: 15px;
+    margin: 5px;
+}
+
+#input_message{
+    display: inline-block;
+    width: 78%;
+}
+
+#send_button{
+    display: inline-block;
+    width: 20%;
+}
+
+.chat{
+    height: 100vh;
+    right: 10px;
+}
+
+
+@media only screen and (max-width: 950px){
+    #back-board > div > div{
+        height: 70px;
+        width: 70px;
+    }
+}
+
+@media only screen and (max-width: 850px){
+    #back-board > div > div{
+        height: 60px;
+        width: 60px;
+    }
 }
