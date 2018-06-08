@@ -46,20 +46,25 @@ $('#submit-user-info').click(function(){
     findButton.html("Looking for game...")
     socket.emit('searchOthello', {
         "userName": userName,
-        "id": window.localStorage.getItem('id'),
-        "pairingHash": null
+        "token": window.localStorage.getItem('token')
+    }, function(err, response){
+        if(err){
+            console.log(`error finding game`);
+        }
+        else{
+            
+        }
     });
 })
 
-
 socket.on('connect', function(){
-    const id = window.localStorage.getItem('id') ? window.localStorage.getItem('id') : null;
-    console.log('id: ', id);
-    socket.emit('validateUser', {id: id}, function(err, response){
+    const token = window.localStorage.getItem('token') ? window.localStorage.getItem('token') : null;
+    // console.log(token);
+    socket.emit('validateUser', {token: token}, function(err, response){
         console.log('server response: ', response);
         if(err){
             console.log(err);
-            window.localStorage.setItem('id', response.id);
+            window.localStorage.setItem('token', response.token);
         }
     });
 })

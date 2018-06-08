@@ -1,35 +1,36 @@
 var socket = io();
 
-// var gameId = window.location.search;
+var gameId = window.location.search;
 function getGameId() {
   let searchUrl = window.location.search;
   if (searchUrl.includes('numPlayers=2')) {
     var searchUrlSplit = searchUrl.split('&id=');
-    // gameId = searchUrlSplit[1];
-    return searchUrlSplit[1];
+    gameId = searchUrlSplit[1];
   }
 }
 
 socket.on('connect', function() {
-  // console.log('connected to server');
-  const token = window.localStorage.getItem('token')
-    ? window.localStorage.getItem('token')
+  console.log('connected to server');
+  const id = window.localStorage.getItem('id')
+    ? window.localStorage.getItem('id')
     : undefined;
-  if (token === undefined) {
-    // console.log('unable to identify user');
+  if (id === undefined) {
+    console.log('unable to identify user');
     window.location = 'index.html';
     return;
   }
-  socket.emit('validateUser', { token, gameId: getGameId() }, function(err, response) {
+  socket.emit('validateUser', { id, gameId }, function(err, response) {
     // console.log(res);
     if (err) {
-      // console.log(err);
-      window.localStorage.removeItem('token');
-      window.localStorage.setItem('token', response.id);
+      console.log(err);
+      window.localStorage.removeItem('id');
+      window.localStorage.setItem('id', response.id);
+      //async?
       window.location = 'index.html';
     } else {
-      // console.log(response);
-      socket.emit('join', {token, gameId: getGameId()});
+      console.log(response);
+      //read response from the server - such as game role, game state(?), info about user
+      // socket.emit('')
     }
   });
 });
@@ -483,43 +484,11 @@ var View = {
   handleSendMessage: function(message){
     console.log('send message ', message);
     $("<li>").addClass("li-message").html(message.from + ": " + message.message).appendTo("#messages");
-    this.scrollToBottom();
   },
 
   handleServerMessage: function(message){
     console.log('sever message ',message);
     $("<li>").addClass('li-server-message').html(message.message).appendTo("#messages");
-    this.scrollToBottom();
-  },
-
-  scrollToBottom: function(){
-    // selectors
-    var messages = $('#messages');
-    var newMessage = messages.children('li:last-child');
-    // console.log(messages);
-    // console.log(newMessage);
-    //heights
-
-    var clientHeight = messages.prop('clientHeight');
-    var scrollTop = messages.prop('scrollTop');
-    var scrollHeight = messages.prop('scrollHeight');
-    var newMessageHeight = newMessage.innerHeight();
-    var lastMessageHeight = newMessage.prev().innerHeight();
-  
-    // console.log('clientHeight: ', clientHeight);
-    // console.log('scrollTop: ', scrollTop);
-    // console.log('scrollHeight: ', scrollHeight);
-    // console.log('newMessageHeight: ', newMessageHeight);
-    // console.log('lastMessageHeight:', lastMessageHeight);
-
-    if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
-      // console.log('scroll');
-      messages.scrollTop(scrollHeight);
-
-    }
-    // else{
-    //   console.log('dont scroll');
-    // }
   }
 
 };
@@ -549,16 +518,18 @@ var Controller = {
     $('#message-form').on('submit', function(event) {
       event.preventDefault();
       console.log(event);
-      var message = $('#input_message').val().trim();
+      var message = $('#input_message')
+        .val()
+        .trim();
       if (message.length > 0) {
         socket.emit(
           'newMessage',
-          { token: window.localStorage.getItem('token'), gameId: getGameId(), message },
+          { id: window.localStorage.getItem('id'), gameId, message },
           function(err) {
             if (err) {
               console.log(err);
             } else {
-              // console.log('success');
+              console.log('success');
               $('#input_message').val('');
             }
           }
@@ -572,11 +543,9 @@ var Controller = {
     switch (type) {
       case 'sendMessage':
         View.handleSendMessage(message);
-        // View.scrollToBottom();
         return;
       case 'serverMessage':
         View.handleServerMessage(message);
-        // View.scrollToBottom();
         return;
       default:
         console.log('invalid message type');

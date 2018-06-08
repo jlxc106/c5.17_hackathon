@@ -1,13 +1,8 @@
 var mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const {ObjectID} = require('mongodb');
 
-var User = mongoose.model("User", {
-    id: {
-        type: String,
-        required: true,
-        minlength: 1,
-        trim: true, //removes leading and trailing whitespace
-
-    },
+var UserSchema = new mongoose.Schema({
     userName:{
         type: String,
         trim: true,
@@ -24,11 +19,29 @@ var User = mongoose.model("User", {
     roomId:{
         type: String,
         default: null
-    },
-    hash:{
-        type: String,
-        default: null
     }
-});
+})
     
+UserSchema.methods.generateAuthToken = function(){
+    var user = this;
+    var token = jwt.sign({_id: user._id.toHexString()}, process.env.JWT_SECRET).toString();
+    return token;
+}
+
+UserSchema.statics.findByToken = function(token){   //model methods get called with model as this binded
+    var User = this;
+    var decoded;
+
+    try{
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+    }catch(e){
+        return Promise.reject();
+    }
+
+    return User.findById({
+        '_id': decoded._id
+    })
+}
+
+var User = mongoose.model("User", UserSchema)
 module.exports = {User};

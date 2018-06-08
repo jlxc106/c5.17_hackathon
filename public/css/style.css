@@ -62,6 +62,13 @@
 #input-name{
     background-color:  #f2f2f2;
     border: 1px solid black;
+    max-width: 100%;
+}
+
+#messages{
+    height: 90vh;
+    list-style-type: none;
+    overflow-y: auto;
 }
 
 #invalid-name-warning{
@@ -98,6 +105,10 @@
     font-size: 30px;
 }
 
+#user-info-form > div{
+    text-align:center;
+}
+
 #return-img{
     width: 30px;
 }
@@ -110,7 +121,8 @@ body{
     font-size: 0;
     /* width: 100vw; */
     height: 100vh;
-    overflow-y: auto;
+    overflow: hidden;
+    /* overflow-y: auto; */
     margin: 0 auto;
     background-image: url(images/forestbackground.jpg);
     background-size: cover;
@@ -320,6 +332,8 @@ body{
     /* height: 100vw; */
     width: 100%;
     margin: 0 3px 3px 3px;
+    /* overflow-y: auto; */
+
 }
 
 .chat-header{
@@ -336,13 +350,12 @@ body{
     margin: 0;
 }
 
-#messages{
-    height: 90vh;
-}
+
 
 .chat__footer{
     font-size: 15px;
     margin: 5px;
+    position: fixed;
 }
 
 #input_message{
@@ -360,6 +373,14 @@ body{
     right: 10px;
 }
 
+.li-server-message{
+    font-size: 15px;
+    background: #f2f2f2
+}
+
+.li-message{
+    font-size: 14px
+}
 
 @media only screen and (max-width: 950px){
     #back-board > div > div{
