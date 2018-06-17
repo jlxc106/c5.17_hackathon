@@ -43,7 +43,8 @@ $('#submit-user-info').click(function(){
         $('#invalid-name-warning').css('display', 'block');
         return;
     }
-    findButton.html("Looking for game...")
+    findButton.html("Looking for game...");
+    findButton.attr('disabled', true);
     socket.emit('searchOthello', {
         "userName": userName,
         "token": window.localStorage.getItem('token')

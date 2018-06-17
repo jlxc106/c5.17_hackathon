@@ -21,6 +21,7 @@ class Othello {
   disconnectUser(user) {
     // console.log('************USER :', user);
     // console.log('*****ACTIVE USERS: ', this.activeUsers);
+    this.waitingList = this.waitingList.filter(waitingUser => waitingUser.socketId !== user.socketId);
     var disconnected_user = this.activeUsers.filter(activeUser=> activeUser.socketId === user.socketId);
     this.activeUsers = this.activeUsers.filter(
       activeUser => activeUser.socketId !== user.socketId
@@ -33,6 +34,7 @@ class Othello {
   }
 
   addUserToWaitingList(user) {
+    this.waitingList = this.waitingList.filter(waitingUser => waitingUser.socketId !== user.socketId); //prevents same user from making two requests
     this.waitingList.push(user);
     if (this.waitingList.length > 1) {
       return true;

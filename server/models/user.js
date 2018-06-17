@@ -19,6 +19,20 @@ var UserSchema = new mongoose.Schema({
     roomId:{
         type: String,
         default: null
+    },
+    record:{
+        wins:{
+            type: Number,
+            default: 0
+        },
+        losses:{
+            type: Number,
+            default: 0
+        },
+        ties:{
+            types: Number,
+            default: 0
+        }
     }
 })
     
