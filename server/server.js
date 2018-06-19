@@ -92,7 +92,7 @@ io.on('connection', socket => {
                       err => console.log('error: ', err)
                     );
                   } else {
-                    console.log(`welcome back ${doc.userName} #${socket.id}`);
+                    console.log(`welcome back ${doc.userName} socket # ${socket.id}`);
                     // console.log(`welcome back ${doc}`);
                     callback(null, doc);
                   }
@@ -115,7 +115,7 @@ io.on('connection', socket => {
           if(err || !gameObj){
             return console.log(err);
           }
-          console.log('117 pre initOthello gameObj', gameObj);
+          // console.log('117 pre initOthello gameObj', gameObj);
           socket.emit('initOthello', {
             role: doc.role,
             users: usersInGame,
@@ -134,7 +134,7 @@ io.on('connection', socket => {
   });
 
   socket.on('searchOthello', response => {
-    console.log(response);
+    // console.log(response);
     if (response.userName.trim().length > 0) {
       User.findByToken(response.token).then(doc => {
         User.findByIdAndUpdate(
@@ -142,13 +142,13 @@ io.on('connection', socket => {
           { userName: response.userName },
           { new: true },
           (err, result) => {
-            console.log('searchothello result: ', result);
+            // console.log('searchothello result: ', result);
             if (err || !result) {
               console.log('unable to find user');
               return;
             } else if (othello.addUserToWaitingList(result)) {
               const gameId = new ObjectID().toHexString();
-              console.log('gameId: ', gameId);
+              // console.log('gameId: ', gameId);
               othello
                 .addUsersToGame(gameId)
                 .then(players => {
@@ -197,7 +197,7 @@ io.on('connection', socket => {
                       // [2,3], [3,2], [4,5], [5,4]
                     }
                   });
-                  othelloGame.save().then(gameObj => console.log(gameObj));
+                  othelloGame.save();
                 })
                 .catch(e => console.log(e));
             }
@@ -210,24 +210,68 @@ io.on('connection', socket => {
   });
 
   socket.on('setMove', (res, callback) => {
-      console.log('201 ', res);
+      // console.log('201 ', res);
     OthelloModel.findById(res.gameId).then(othelloGame => {
         // console.log('203 ', othelloGame);
-        othelloGame.validateMove(res.role, res.position);
-        return othelloGame;
+        if((othelloGame.gameState.userTurn ==='sith' && res.role === 'black') || (othelloGame.gameState.userTurn ==='jedi' && res.role === 'white')){
+          othelloGame.validateMove(res.role, res.position);
+          return othelloGame;
+        }
+        throw new Error('not user turn')
     }).then(othelloGame =>{
-      // console.log(othelloGame);
       var resObj = {
         allowedMoves: othelloGame.gameState.allowedMoves,
         boardState: othelloGame.gameState.boardState,
+        userTurn: othelloGame.gameState.userTurn
       }
       socket.to(res.gameId).emit('getMove', resObj)
       callback(null, resObj)
-    });
+      // console.log(othelloGame);
+      if(othelloGame.gameState.winner.role){
+        // console.log('winner poggers');
+        io.in(res.gameId).emit('gameOver', {
+          winner: othelloGame.gameState.winner.role
+        })
+      }
+
+    }).catch(err => console.log(err));
     // socket.to(res.gameId).emit('getMove', res);
     // io.in(res.gameId).emit("getMove",res);
     // callback(null, res);
   });
+
+  socket.on('requestNewGame', (response)=>{
+    console.log('requestnewGame', response);
+    User.findByToken(response.token).then(user =>{
+      var swRole = response.role === 'black' ? 'sith' : 'jedi';
+      OthelloModel.findById(response.gameId).then(othelloGame =>{
+        othelloGame.players[swRole].resetGamePressed = new Date().valueOf();
+        if(othelloGame.players.jedi.resetGamePressed && othelloGame.players.sith.resetGamePressed && Math.abs(othelloGame.players.jedi.resetGamePressed - othelloGame.players.sith.resetGamePressed < 600000)){
+          othelloGame.initNewGame();
+          othelloGame.save().then(othello =>{
+            io.in(response.gameId).emit('initNewGame', othello);
+          })
+        }else{
+          othelloGame.save();
+        }
+      })
+
+      socket.to(response.gameId).emit('confirmNewGame', {
+        userName: user.userName
+      })
+    }).catch(err => console.log(err));
+  })
+
+  socket.on('startNewGame', (response)=>{
+    OthelloModel.findById(response.gameId).then(othelloGame =>{
+      othelloGame.initNewGame();
+      othelloGame.save().then(othello =>{
+        io.in(response.gameId).emit('initNewGame', othello);
+      })
+    })
+
+  })
+
 
   socket.on('newMessage', (response, callback) => {
     User.findByToken(response.token)
@@ -264,16 +308,16 @@ server.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
 
-memwatch.on('leak', function(info){
-  console.log('-------------leak info--------');
-  console.log(info);
-  console.log('--------------------------------------')
-})
+// memwatch.on('leak', function(info){
+//   console.log('-------------leak info--------');
+//   console.log(info);
+//   console.log('--------------------------------------')
+// })
 
 
-memwatch.on('stats', function(stats){
-  console.log('-------------leak info--------');
-  console.log(stats);
-  console.log('--------------------------------------')
-})
+// memwatch.on('stats', function(stats){
+//   console.log('-------------leak info--------');
+//   console.log(stats);
+//   console.log('--------------------------------------')
+// })
 

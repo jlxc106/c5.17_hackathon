@@ -63,7 +63,7 @@ socket.on('connect', function(){
     // console.log(token);
     socket.emit('validateUser', {token: token}, function(err, response){
         console.log('server response: ', response);
-        if(err){
+        if(err && response.token){
             console.log(err);
             window.localStorage.setItem('token', response.token);
         }

@@ -9,36 +9,48 @@ function getGameId() {
 }
 
 socket.on('connect', function() {
-  const token = window.localStorage.getItem('token') ? window.localStorage.getItem('token'): undefined;
+  const token = window.localStorage.getItem('token')
+    ? window.localStorage.getItem('token')
+    : undefined;
   if (token === undefined) {
     window.location = 'index.html';
     return;
   }
-  socket.emit('validateUser', { token, gameId: getGameId() }, function(err,response) {
-    if (err) {
+  socket.emit('validateUser', { token, gameId: getGameId() }, function(
+    err,
+    response
+  ) {
+    if (err && response.id) {
       window.localStorage.removeItem('token');
       window.localStorage.setItem('token', response.id);
       window.location = 'index.html';
     } else {
-      //   console.log('validateUser response: ', response);
       socket.emit('join', { token, gameId: getGameId() });
-      // Controller.handleRole(response.role);
     }
   });
 });
 
-//get opponent's move
+socket.on('initNewGame', function(res){
+  console.log(res);
+  View.clearBoard();
+  Model.updateBoard(res.gameState);
+  View.highlightTurn(Model.gameInstance.role);
+  View.removeNewGameMessage();
+})
+
 socket.on('getMove', function(res) {
-  console.log('getMove', res);
   Model.updateBoard(res);
+  View.highlightTurn(Model.gameInstance.role);
+  // Model.
 });
 
 socket.on('initOthello', function(res) {
-  console.log('initOthello', res);
   View.handleUserNames(res.users);
-  Model.initGame(res);
-  // Controller.handleGameInit(res);
-  // Controller.handleRole(res.role);
+  Model.gameInstance.init(res);
+});
+
+socket.on('gameOver', function(res) {
+  Controller.handleGameOver(res.winner);
 });
 
 socket.on('sendMessage', function(message) {
@@ -48,6 +60,11 @@ socket.on('sendMessage', function(message) {
 socket.on('serverMessage', function(message) {
   Controller.handleChatReceive('serverMessage', message);
 });
+
+socket.on('confirmNewGame', function(res){
+  Controller.handleConfirmNewGame(res.userName);
+})
+
 
 var Model = {
   gameInstance: {},
@@ -60,13 +77,16 @@ var Model = {
 
   updateBoard: function(response) {
     this.gameInstance.importBoard(response.boardState);
-    this.gameInstance.setLegalMoves(response.allowedMoves);
+    this.gameInstance.setTurn(response.userTurn);
+    if(this.gameInstance.isUserTurn){
+      this.gameInstance.setLegalMoves(response.allowedMoves);
+    }
+    // this.gameInstance.
   },
 
-  initGame: function(res){
-    this.gameInstance.init(res);
-  },
-
+  // initGame: function(res){
+  //   this.gameInstance.init(res);
+  // },
 
   GameObj: function() {
     var self = this;
@@ -77,81 +97,87 @@ var Model = {
     this.isUserTurn = false;
     this.legal_moves_array = [];
 
+    this.whitePlayerByRef = null;
+    this.blackPlayerByRef = null;
 
-    this.init = function(res){
+    this.init = function(res) {
       if (!res.role || !(res.role === 'black' || res.role === 'white')) {
         console.log('invalid role');
         throw new Error('invalid role');
       }
       this.role = res.role;
-      this.importBoard(res.boardState);
-      if(this.role === 'black'){
+      if (this.role === 'black') {
         this.otherRole = 'white';
-        if(res.userTurn === 'sith'){
-          this.isUserTurn = true;
-        }
-      }else{
+        this.whitePlayerByRef = this.opponent;
+        this.blackPlayerByRef = this.player;
+      } else {
+        this.whitePlayerByRef = this.player;
+        this.blackPlayerByRef = this.opponent;
         this.otherRole = 'black';
-        if(res.userTurn === 'jedi'){
-          this.isUserTurn = true;
-        }
       }
-      if(this.isUserTurn){
+      this.setTurn(res.userTurn);
+      this.importBoard(res.boardState);
+      if (this.isUserTurn) {
         this.setLegalMoves(res.allowedMoves);
-        // this.legal_moves_array = res.allowedMoves;
       }
       View.highlightTurn(res.userTurn);
       View.initEventHandlers(self);
+    };
+
+    this.preImportBoard = function(){
+      this.player = [];
+      this.opponent = [];
+      if(this.role === 'black'){
+        this.whitePlayerByRef = this.opponent;
+        this.blackPlayerByRef = this.player;
+      }
+      else{
+        this.whitePlayerByRef = this.player;
+        this.blackPlayerByRef = this.opponent;
+      }
     }
 
-    // this.setupStartingPieces = function(){
-    //   if(this.role === 'black'){
-    //     this.player.push(Model.array_list[3][4].addClass('black-disc'));
-    //     this.player.push(Model.array_list[4][3].addClass('black-disc'));
-    //     this.opponent.push(Model.array_list[3][3].addClass('white-disc'));
-    //     this.opponent.push(Model.array_list[4][4].addClass('white-disc'));
-    //   }else{
-    //     this.opponent.push(Model.array_list[3][4].addClass('black-disc'));
-    //     this.opponent.push(Model.array_list[4][3].addClass('black-disc'));
-    //     this.player.push(Model.array_list[3][3].addClass('white-disc'));
-    //     this.player.push(Model.array_list[4][4].addClass('white-disc'));
-    //   }
-    // }
-
-    this.importBoard = function(boardState){
+    this.importBoard = function(boardState) {
+      this.preImportBoard();
       boardState.forEach((row, rowIndex) => {
-        this.player = [];
-        this.opponent = [];
-        var tempBlack = null;
-        var tempWhite = null;
-        if(this.role === 'black'){
-            tempBlack = this.player;
-            tempWhite = this.opponent;
-        }else{
-            tempBlack = this.opponent;
-            tempWhite = this.player;
-        }
-        for(column in row){
+        for (column in row) {
           var cell = Model.array_list[rowIndex][column];
-          if(row[column] === "b"){
-            tempBlack.push(cell.removeClass('white-disc allowedSpot').addClass('black-disc'));
-          }
-          else if(row[column] === 'w'){
-            tempWhite.push(cell.removeClass('black-disc allowedSpot').addClass('white-disc'));
+          if (row[column] === 'b') {
+            this.blackPlayerByRef.push(
+              cell.removeClass('white-disc allowedSpot').addClass('black-disc')
+            );
+          } else if (row[column] === 'w') {
+            this.whitePlayerByRef.push(
+              cell.removeClass('black-disc allowedSpot').addClass('white-disc')
+            );
           }
         }
-      })
+        View.updateScores(this.whitePlayerByRef, this.blackPlayerByRef);
+      });
+    };
+
+    this.setTurn = function(userTurn){
+      if(!this.role){
+        return console.log('invalid role');
+      }
+      if(this.role ==='black' && userTurn === 'sith' || this.role === 'white' && userTurn === 'jedi'){
+        this.isUserTurn = true;
+      }
     }
 
-    this.setLegalMoves = function(legalMoves){
+    this.setLegalMoves = function(legalMoves) {
       this.clearLegalMoves();
-      legalMoves.forEach(move =>{
+      legalMoves.forEach(move => {
         var row = move.row;
         var col = move.col;
-        this.legal_moves_array.push(Model.array_list[row][col].removeClass('black-disc white-disc').addClass('allowedSpot'));
-      })
+        this.legal_moves_array.push(
+          Model.array_list[row][col]
+            .removeClass('black-disc white-disc')
+            .addClass('allowedSpot')
+        );
+      });
       return this.legal_moves_array;
-    }
+    };
 
     this.legalMoves = function() {
       var colNum, rowNum;
@@ -163,41 +189,32 @@ var Model = {
           // for rows
           for (var k = -1; k < 2; k++) {
             //for columns
-            if (rowNum + j < 0 ||rowNum + j > 7 ||colNum + k < 0 ||colNum + k > 7 ) {
+            if (
+              rowNum + j < 0 ||
+              rowNum + j > 7 ||
+              colNum + k < 0 ||
+              colNum + k > 7
+            ) {
               continue;
             }
             var selectDiv = Model.array_list[rowNum + j][colNum + k];
-            if (selectDiv.hasClass('white-disc') ||selectDiv.hasClass('black-disc')) {
+            if (
+              selectDiv.hasClass('white-disc') ||
+              selectDiv.hasClass('black-disc')
+            ) {
               continue;
             } else {
-              // for (var b = 0; b < this.player.length; b++) {
               this.searchSpots(
                 selectDiv,
                 `${this.otherRole}-disc`,
                 `${this.role}-disc`
               );
-              // }
             }
           }
         }
       }
       for (var i = 0; i < self.legal_moves_array.length; i++) {
         self.legal_moves_array[i].addClass('allowedSpot');
-      }
-      if (self.legal_moves_array.length === 0 && self.player.length + self.opponent.length < 64) {
-        socket.emit(
-          'setMove',
-          {
-            token: window.localStorage.getItem('token'),
-            gameId: getGameId(),
-            position: { x: null, y: null }
-          },
-          function(err, res) {
-            console.log(res);
-            // console.log(,);
-          }
-        );
-        console.log('no valid moves');
       }
     };
 
@@ -249,7 +266,6 @@ var Model = {
               [-1, 1],
               [1, 1]
             ];
-            //found adjacent opposite color
             while (check.hasClass(disc_color)) {
               temp_diag_directions[i][0] += var1;
               temp_diag_directions[i][1] += var2;
@@ -272,78 +288,38 @@ var Model = {
       }
     };
 
-
-    //x - alphanumeric representing the column
-    //y - number representing the row number
-    // this.renderOpponent = function(x, y) {
-    //   if (x === null && y === null) {
-    //     //opponent had to skip a turn due to no legal moves left
-    //     self.isUserTurn = true;
-    //     self.legalMoves();
-    //     View.updateScores(self.player, self.opponent, self.role);
-    //     View.highlightTurn(self.role);
-    //   } else {
-    //     column = Model.col_list.indexOf(x);
-    //     var opponentMove = Model.array_list[y][column].addClass(
-    //       `${self.otherRole}-disc`
-    //     );
-    //     self.opponent.push(opponentMove);
-    //     self.flip(
-    //       opponentMove,
-    //       `${self.otherRole}-disc`,
-    //       `${self.role}-disc`,
-    //       column,
-    //       y
-    //     );
-    //     //initiate user's turn
-    //     self.isUserTurn = true;
-    //     self.legalMoves();
-    //     View.updateScores(self.player, self.opponent, self.role);
-    //     View.highlightTurn(self.role);
-    //   }
-    // };
-
-    //control?
     this.clickHandler = function() {
-        console.log('inside clickhandler');
-      // var allowedMove = false;
+      if(!self.isUserTurn){
+        console.log('wait ur turn punk');
+        return false;
+      }
       var col = $(this).attr('col');
       var rowNum = parseInt($(this).attr('row'));
       var colNum = Model.col_list.indexOf(col);
-      var allowedMove = self.legal_moves_array.some(function(move){
-        return move.attr('row') == rowNum && move.attr('col') == col
-      })
+      var allowedMove = self.legal_moves_array.some(function(move) {
+        return move.attr('row') == rowNum && move.attr('col') == col;
+      });
       if (allowedMove) {
-        console.log('colNum: ',colNum);
-        console.log('rowNum: ', rowNum);
         socket.emit(
           'setMove',
           {
             token: window.localStorage.getItem('token'),
             gameId: getGameId(),
             role: self.role,
-            // position: [rowNum, colNum]
-            position: {"row": rowNum, "col": colNum}
+            position: { row: rowNum, col: colNum }
           },
           function(err, res) {
-            if(err){
-              console.log('error occured');    
+            if (err) {
+              console.log('error occured');
             }
-            console.log('288 ',res);
+            console.log('288 ', res);
             self.importBoard(res.boardState);
           }
         );
-        $(this).addClass(`${self.role}-disc`);
-        self.player.push($(this));
-        self.flip(`${self.role}-disc`,`${self.otherRole}-disc`, colNum,rowNum);
-        $(this).removeClass('allowedSpot').off('click');  // ? //
+          self.isUserTurn = false;
+          View.highlightTurn(self.otherRole);
+          self.clearLegalMoves();
       }
-      View.updateScores(self.player, self.opponent, self.role);
-      if (self.player.length + self.opponent.length === 64) {
-        self.gameOver();
-      }
-      self.isUserTurn = false;
-      View.highlightTurn(self.otherRole);
     };
 
     this.flip = function(color, color_to_replace, x, y) {
@@ -425,36 +401,27 @@ var Model = {
         arrayOfFlips[i].removeClass('white-disc black-disc');
         arrayOfFlips[i].addClass(color);
       }
-      // self.isUserTurn!=self.isUserTurn;
       self.clearLegalMoves();
     };
 
-    this.gameOver = function() {
-      if (this.opponent.length > this.player.length) {
-        // this.turn = self.player_list[0];
-        // this.symbolAppear();
-        $('#myModal').show();
-      } else {
-        // this.turn = self.player_list[1];
-        // this.symbolAppear();
-        $('#myModal2').show();
+    this.gameOver = function(winner) {
+      if(winner === 'sith' || winner === 'jedi'){
+        $(`#contain-${winner}-gif`).show();
+        return;
       }
-      //   this.resetAll();
+      if (this.whitePlayerByRef.length < this.blackPlayerByRef.length) {
+        $('#contain-sith-gif').show();
+      } else if (this.whitePlayerByRef.length > this.blackPlayerByRef.length) {
+        $('#contain-jedi-gif').show();
+      }
     };
 
     this.resetAll = function() {
-      self.turn = null;
-      for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-          Model.array_list[i][j].removeClass(
-            'white-disc black-disc allowedSpot'
-          );
-        }
-      }
-      self.player1 = [];
-      self.player2 = [];
-      self.legal_moves_array = [];
-      self.init();
+      socket.emit('requestNewGame', {
+        token: window.localStorage.getItem('token'),
+        gameId: getGameId(),
+        role: self.role
+      });
     };
 
     this.legalMoves_old = function(index) {
@@ -608,29 +575,36 @@ var View = {
   },
 
   scrollToBottom: function() {
-    // selectors
     var messages = $('#messages');
     var newMessage = messages.children('li:last-child');
-    //heights
     var clientHeight = messages.prop('clientHeight');
     var scrollTop = messages.prop('scrollTop');
     var scrollHeight = messages.prop('scrollHeight');
     var newMessageHeight = newMessage.innerHeight();
     var lastMessageHeight = newMessage.prev().innerHeight();
 
-    if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >=scrollHeight) {
+    if (
+      clientHeight + scrollTop + newMessageHeight + lastMessageHeight >=
+      scrollHeight
+    ) {
       messages.scrollTop(scrollHeight);
     }
   },
 
-  updateScores: function(user, otherUser, role) {
-    if (role === 'black') {
-      $('.jedi-score').html(otherUser.length);
-      $('.sith-score').html(user.length);
-    } else {
-      $('.jedi-score').html(user.length);
-      $('.sith-score').html(otherUser.length);
+  updateScores: function(jedi, sith) {
+    if (jedi && sith) {
+      $('.jedi-score').html(jedi.length);
+      $('.sith-score').html(sith.length);
     }
+  },
+
+  clearBoard: function(){
+    Model.array_list.forEach(function(row){
+      row.forEach(function(cell){
+        console.log(cell);
+        cell.removeClass('black-disc white-disc allowedSpot');
+      })
+    })
   },
 
   highlightTurn: function(role) {
@@ -652,6 +626,24 @@ var View = {
       }
     });
   },
+
+  handleNewGameMessage: function(userName){
+    if($('.chat-new-game').length === 0){
+      var newGameButton = $('<button>').html('New Game').addClass('btn btn-danger chat-new-game').prop('type', 'button');
+      $('<li>')
+      .addClass('li-server-message')
+      .html(`${userName} wants a rematch!`)
+      .append(newGameButton)
+      .appendTo('#messages');
+      this.scrollToBottom();
+    }
+  },
+
+  removeNewGameMessage: function(){
+    if($('.chat-new-game').length){
+      $('.chat-new-game').parent().remove();
+    }
+  }
 
 };
 
@@ -703,6 +695,22 @@ var Controller = {
         console.log('invalid message type');
         return;
     }
+  },
+  
+  handleGameOver: function(winner){
+    Model.gameInstance.gameOver(winner);
+    View.highlightTurn(winner);
+  },
+
+  handleConfirmNewGame: function(userName){
+    View.handleNewGameMessage(userName);
+    $('.chat-new-game').click(function(){
+      socket.emit('startNewGame', {
+        token: window.localStorage.getItem('token'),
+        gameId: getGameId()
+      })
+      $(this).prop('disabled', true)
+    })
   }
 };
 

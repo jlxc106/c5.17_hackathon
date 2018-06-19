@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 const _ = require('lodash')
-var memwatch = require('memwatch-next');
+// var memwatch = require('memwatch-next');
 // const jwt = require('jsonwebtoken');
 // const { ObjectID } = require('mongodb');
 // var ObjectId = mongoose.Types.ObjectId();
@@ -26,11 +26,17 @@ var OthelloSchema = new mongoose.Schema({
         trim: true,
         required: true
       },
-      socketId: {
-          type: String,
-          trim: true,
-          required: true
+      resetGamePressed:{
+        type: Number,
+        default: 0
       }
+      // ,
+      // socketId: {
+      //     type: String,
+      //     trim: true,
+      //     required: true
+      // },
+
     },
     sith: {
       userName: {
@@ -43,11 +49,16 @@ var OthelloSchema = new mongoose.Schema({
         trim: true,
         required: true
       },
-      socketId: {
-        type: String,
-        trim: true,
-        required: true
+      resetGamePressed: {
+        type: Number,
+        default: 0
       }
+      // ,
+      // socketId: {
+      //   type: String,
+      //   trim: true,
+      //   required: true
+      // }
     }
   },
   gameState: {
@@ -66,45 +77,106 @@ var OthelloSchema = new mongoose.Schema({
       default: 'sith'
     },
     boardState: [{0:String, 1:String,2:String,3:String,4:String,5:String,6:String,7:String}],
-    // boardState: mongoose.Schema.Types.Mixed,
     allowedMoves: mongoose.Schema.Types.Mixed,
     winner:{
-        type: ObjectId,
-        default: null
+        _id:{
+          type: ObjectId,
+          default: null
+        },
+        role: {
+          type: String,
+          default: null
+        }
     }
   }
 });
 
+var defaultBoardState = [
+  {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
+  {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
+  {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
+  {0: '0', 1:'0', 2:'0', 3:'w', 4:'b', 5:'0', 6:'0', 7:'0', },
+  {0: '0', 1:'0', 2:'0', 3:'b', 4:'w', 5:'0', 6:'0', 7:'0', },
+  {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
+  {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
+  {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
+];
+
+var defaultGameState = {
+  isActive: true,
+  turnCount: 0,
+  userTurn: 'sith',
+  boardState: defaultBoardState,
+  allowedMoves: [{'row': 2, 'col': 3}, {'row': 3, 'col': 2}, {'row': 4, 'col': 5}, {'row': 5, 'col': 4}],
+  winner: {
+    _id: null,
+    role: null
+  }
+}
+
+var isGameOver = (boardState) =>{
+  var gameOver = true;
+  boardState.forEach(row => {
+    for(column in row){
+      if(row[column] === '0'){
+        // return false;
+        gameOver = false;
+        return;
+      }
+    }
+  })
+  return gameOver;
+  // return true;
+}
+
+var determineWinner = (boardState) =>{
+  var jedi = 0;
+  var sith = 0;
+
+  boardState.forEach(row =>{
+    for(column in row){
+      if(row[column] === 'w'){
+        jedi++;
+      }
+      else if(row[column] ==='b'){
+        sith++;
+      }
+    }
+  })
+  if(jedi > sith){
+    return 'jedi';
+  } 
+  else if(sith > jedi){
+    return 'sith';
+  }
+  else{
+    // console.log('tie');
+    return 'tie';
+  }
+}
+
+OthelloSchema.methods.initNewGame = function(){
+  var othelloGame = this;
+  othelloGame.players.jedi.resetGamePressed = 0;
+  othelloGame.players.sith.resetGamePressed = 0;
+  othelloGame.gameState = defaultGameState;
+  return othelloGame;
+}
 
 OthelloSchema.methods.validateMove = function(role, coordinates){
     const coord_row = coordinates['row'];
     const coord_col = coordinates['col'];
+    var winner = null;
     var othelloGame = this;
     var userPiece, opponentPiece;
-    // var moveIsValid = false;
     var copyBoardState = this.gameState.boardState.slice();
-    console.log('inside validatemove');
-    // if((othelloGame.gameState.userTurn === 'sith' && role !== 'black') || (othelloGame.gameState.userTurn === 'jedi' && role !== 'white')){ // the correct user submitted a move
-    //     return Promise.reject();
-    // }
-    // coordinates.forEach(value =>{
-    //     if(value < 0 || value > 7){
-    //         return Promise.reject();
-    //     }
-    // })
-    // console.log("88 ", othelloGame.gameState.allowedMoves)
-    console.log('96 ', coordinates);
+    // console.log('inside validatemove');
+    // console.log('96 ', coordinates);
     var moveIsValid = _.findIndex(othelloGame.gameState.allowedMoves, (move)=>{
         return move['row'] === coord_row && move['col'] === coord_col 
     })
-    // console.log(othelloGame.gameState.allowedMoves.includes(coordinates));
-    // console.log(_.findIndex(othelloGame.gameState.allowedMoves, (move)=>{
-    //     return move[0] === coordinates[0] && move[1] === coordinates[1] 
-    // }))
-    // console.log(_.includes(othelloGame.gameState.allowedMoves, coordinates));
-    console.log('105 ', moveIsValid);
+    // console.log('105 ', moveIsValid);
     if(moveIsValid !== -1){
-        //update board state
         if(role === "black"){
             // console.log(92)
             userPiece = "b";
@@ -116,9 +188,9 @@ OthelloSchema.methods.validateMove = function(role, coordinates){
             opponentPiece = "b";
             othelloGame.gameState.userTurn = 'sith';
         }
-        console.log(119, 'before flip');
+        // console.log(119, 'before flip');
         var arrayOfFlips = flip(othelloGame.gameState.boardState, coordinates, userPiece, opponentPiece);
-        console.log(121, arrayOfFlips);
+        // console.log(121, arrayOfFlips);
         copyBoardState[coord_row][coord_col] = userPiece;
         arrayOfFlips.forEach(flipCoord =>{
             var row = flipCoord[0];
@@ -126,10 +198,32 @@ OthelloSchema.methods.validateMove = function(role, coordinates){
             copyBoardState[row][column] = userPiece;
         })
         othelloGame.gameState.boardState = copyBoardState;
-        // allowedMoves: [[2,3], [3,2], [4,5],[5,4]]
-        console.log(130);
-        othelloGame.gameState.allowedMoves = updateAllowedMoves(othelloGame.gameState.boardState, opponentPiece, userPiece);
-        console.log(132);
+        //evaluate the boardstate for end of game scenario
+        if(isGameOver(othelloGame.gameState.boardState)){
+          winner = determineWinner(othelloGame.gameState.boardState);
+          othelloGame.gameState.winner = {
+            _id: othelloGame.players[winner]._id,
+            role: winner
+          }
+        othelloGame.gameState.allowedMoves = [];
+        othelloGame.gameState.isActive = false;
+        }else{
+          othelloGame.gameState.allowedMoves = updateAllowedMoves(othelloGame.gameState.boardState, opponentPiece, userPiece);
+          if(othelloGame.gameState.allowedMoves.length === 0){
+            console.log(`no moves available for ${opponentPiece} player`);
+            othelloGame.gameState.userTurn = (othelloGame.gameState.userTurn === 'jedi' ? 'sith' : 'jedi');
+            othelloGame.gameState.allowedMoves = updateAllowedMoves(othelloGame.gameState.boardState, userPiece, opponentPiece);
+            if(othelloGame.gameState.allowedMoves.length === 0){
+              console.log('no moves for either player');
+              winner = determineWinner(othelloGame.gameState.boardState);
+              // othelloGame.gameState.winner._id = othelloGame.players[winner]._id;
+              othelloGame.gameState.winner = {
+                _id: othelloGame.players[winner]._id,
+                role: winner
+              }
+            }
+          }
+        }
         othelloGame.save().then(()=>{
           return othelloGame;
             // console.log('updated othelloGame:', othelloGame);
@@ -140,18 +234,18 @@ OthelloSchema.methods.validateMove = function(role, coordinates){
     // console.log(othelloGame);
 }
 
-memwatch.on('leak', function(info){
-  console.log('-------------leak info--------');
-  console.log(info);
-  console.log('--------------------------------------')
-})
+// memwatch.on('leak', function(info){
+//   console.log('-------------leak info--------');
+//   console.log(info);
+//   console.log('--------------------------------------')
+// })
 
 
-memwatch.on('stats', function(stats){
-  console.log('-------------leak info--------');
-  console.log(stats);
-  console.log('--------------------------------------')
-})
+// memwatch.on('stats', function(stats){
+//   console.log('-------------leak info--------');
+//   console.log(stats);
+//   console.log('--------------------------------------')
+// })
 
 
 

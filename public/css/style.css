@@ -280,7 +280,7 @@ body{
     height: 100%;
     overflow: auto;
 }
-.modal-content {
+.sith-win-gif {
     background-color: #fefefe;
     margin: auto;
     padding: 20px;
@@ -291,7 +291,7 @@ body{
     background-size:cover;
     background-repeat:no-repeat;
 }
-.modal-content2 {
+.jedi-win-gif {
     background-color: #fefefe;
     margin: auto;
     padding: 20px;
@@ -395,6 +395,11 @@ body{
 }
 #volume-off-icon{
     display: none;
+}
+
+.chat-new-game{
+    float: right;
+    
 }
 
 @media only screen and (max-width: 1000px){
