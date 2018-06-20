@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 
 <head>
@@ -13,6 +13,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
         crossorigin="anonymous"></script>
     <script src="js/lib/lodash.min.js"></script>
+    <script src='/socket.io/socket.io.js'></script>
     <link rel="stylesheet" href="css/style.css">
     <script src="js/script_mvc.js"></script>
     <link rel="shortcut icon" type="image/x-icon" href="css/images/favicon.jpeg"/>
@@ -37,7 +38,7 @@
             <div class="player-info" id="player1-info">
                 <img id="player-imageOne" src="css/images/dark_jedi.jpg" alt="darkJedi-player1">
                 <p class="player_one-name">Sith:</p>
-                <p class="player1-value"></p>
+                <p class="sith-score"></p>
                 <img id="sith-turn-marker" src="css/images/Sith_symbol.png" alt="sith-player1">
             </div>
         </div>
@@ -56,6 +57,77 @@
     </div>
     </div>
 
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>1v1me.io - Othello</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+        crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+    <script src="js/lib/lodash.min.js"></script>
+    <script src='/socket.io/socket.io.js'></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+        crossorigin="anonymous">
+    <script src="js/othello_solo.js"></script>
+    <link rel="shortcut icon" type="image/x-icon" href="css/images/favicon.jpeg" />
+</head>
+
+<body>
+    <div class="col-xs-12 othello">
+        <audio id="sw_audio" class="audio_class" loop preload="auto" src="css/audio/Star-Wars-Duel-of-the-Fates.mp3">
+        </audio>
+        <h2 class="game-title">Othello</h2>
+        <h3 class="game-subtitle">Jedi vs. Sith</h3>
+        <div class="game-contents">
+            <div id="back-board"></div>
+            <div>
+                <div class="stats_container col-xs-offset-2 col-xs-2" id="jedi-stats">
+                    <div class="player-info" id="jedi-info">
+                        <!-- <img id="player-imageTwo" src="css/images/jedi.jpg" alt="jedi-on"> -->
+                        <p class="jedi-name">Jedi<span></span></p>
+                        <p class="jedi-score"></p>
+                        <!-- <img id="jedi-turn-marker" src="css/images/jedi1.png" alt="jedi-player2"> -->
+                    </div>
+                </div>
+                <div class="col-xs-offset-1 col-xs-2" id="reset-button">
+                    <button type="button" class="button reset">RESET</button>
+                </div>
+                <div class="stats_container col-xs-offset-1 col-xs-2" id="sith-stats">
+                    <div class="player-info" id="sith-info">
+                        <!-- <img id="player-imageOne" src="css/images/dark_jedi.jpg" alt="darkJedi-player1"> -->
+                        <p class="sith-name">Sith<span></span></p>
+                        <p class="sith-score"></p>
+                        <!-- <img id="sith-turn-marker" src="css/images/Sith_symbol.png" alt="sith-player1"> -->
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button class='button btn btn-light audio-btn'>
+                    <span id="volume-on-icon"><i class="fas fa-volume-up"></i></span>
+                    <span id="volume-off-icon"><i class="fas fa-volume-off"></i></span>
+                </button>
+            </div>
+        </div>
+        <div id="myModal" class="modal">
+            <div class="modal-content"></div>
+        </div>
+        <div id="myModal2" class="modal">
+            <div class="modal-content2"></div>
+        </div>
+    </div>
+    </div>
 </body>
 
 </html>
