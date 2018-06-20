@@ -63,9 +63,13 @@ socket.on('connect', function(){
     // console.log(token);
     socket.emit('validateUser', {token: token}, function(err, response){
         console.log('server response: ', response);
+        console.log(err);
         if(err && response.token){
             console.log(err);
             window.localStorage.setItem('token', response.token);
+        }
+        else if(response.userName && response.userName!== 'anon'){
+            window.localStorage.setItem('userName', response.userName);
         }
     });
 })
@@ -74,3 +78,14 @@ socket.on('foundOthelloGame', function(response){
     console.log('found game response: ',response);
     window.location = `${response.path}`
 })
+
+
+var fillUserNameInput = function(){
+    var userName = window.localStorage.getItem('userName');
+    if(userName !== 'anon' && userName && userName.length > 0){
+        $('#input-name').attr('placeholder', userName);
+    }
+}
+
+
+$(document).ready(fillUserNameInput)

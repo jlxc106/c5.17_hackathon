@@ -12,7 +12,7 @@ socket.on('connect', function() {
   const token = window.localStorage.getItem('token')
     ? window.localStorage.getItem('token')
     : undefined;
-  if (token === undefined) {
+  if (token === undefined || token === "undefined") {
     window.location = 'index.html';
     return;
   }
@@ -31,7 +31,6 @@ socket.on('connect', function() {
 });
 
 socket.on('initNewGame', function(res){
-  console.log(res);
   View.clearBoard();
   Model.updateBoard(res.gameState);
   View.highlightTurn(Model.gameInstance.role);
@@ -41,7 +40,6 @@ socket.on('initNewGame', function(res){
 socket.on('getMove', function(res) {
   Model.updateBoard(res);
   View.highlightTurn(Model.gameInstance.role);
-  // Model.
 });
 
 socket.on('initOthello', function(res) {
@@ -81,12 +79,7 @@ var Model = {
     if(this.gameInstance.isUserTurn){
       this.gameInstance.setLegalMoves(response.allowedMoves);
     }
-    // this.gameInstance.
   },
-
-  // initGame: function(res){
-  //   this.gameInstance.init(res);
-  // },
 
   GameObj: function() {
     var self = this;
@@ -135,7 +128,7 @@ var Model = {
         this.whitePlayerByRef = this.player;
         this.blackPlayerByRef = this.opponent;
       }
-    }
+    };
 
     this.importBoard = function(boardState) {
       this.preImportBoard();
@@ -152,8 +145,8 @@ var Model = {
             );
           }
         }
-        View.updateScores(this.whitePlayerByRef, this.blackPlayerByRef);
       });
+      View.updateScores(this.whitePlayerByRef, this.blackPlayerByRef);
     };
 
     this.setTurn = function(userTurn){
@@ -163,7 +156,7 @@ var Model = {
       if(this.role ==='black' && userTurn === 'sith' || this.role === 'white' && userTurn === 'jedi'){
         this.isUserTurn = true;
       }
-    }
+    };
 
     this.setLegalMoves = function(legalMoves) {
       this.clearLegalMoves();
@@ -179,45 +172,6 @@ var Model = {
       return this.legal_moves_array;
     };
 
-    this.legalMoves = function() {
-      var colNum, rowNum;
-      this.clearLegalMoves();
-      for (i = 0; i < this.opponent.length; i++) {
-        colNum = Model.col_list.indexOf(this.opponent[i].attr('col'));
-        rowNum = parseInt(this.opponent[i].attr('row'));
-        for (var j = -1; j < 2; j++) {
-          // for rows
-          for (var k = -1; k < 2; k++) {
-            //for columns
-            if (
-              rowNum + j < 0 ||
-              rowNum + j > 7 ||
-              colNum + k < 0 ||
-              colNum + k > 7
-            ) {
-              continue;
-            }
-            var selectDiv = Model.array_list[rowNum + j][colNum + k];
-            if (
-              selectDiv.hasClass('white-disc') ||
-              selectDiv.hasClass('black-disc')
-            ) {
-              continue;
-            } else {
-              this.searchSpots(
-                selectDiv,
-                `${this.otherRole}-disc`,
-                `${this.role}-disc`
-              );
-            }
-          }
-        }
-      }
-      for (var i = 0; i < self.legal_moves_array.length; i++) {
-        self.legal_moves_array[i].addClass('allowedSpot');
-      }
-    };
-
     this.clearLegalMoves = function() {
       this.legal_moves_array.forEach(function(move) {
         move.removeClass('allowedSpot');
@@ -225,72 +179,8 @@ var Model = {
       this.legal_moves_array = [];
     };
 
-    this.searchSpots = function(selectDiv, disc_color, this_color) {
-      var r = parseInt(selectDiv.attr('row'));
-      var c = Model.col_list.indexOf(selectDiv.attr('col'));
-      var diag = [
-        [0, 1],
-        [0, -1],
-        [-1, 0],
-        [1, 0],
-        [-1, -1],
-        [1, -1],
-        [-1, 1],
-        [1, 1]
-      ];
-      var temp_diag_directions = [
-        [0, 1],
-        [0, -1],
-        [-1, 0],
-        [1, 0],
-        [-1, -1],
-        [1, -1],
-        [-1, 1],
-        [1, 1]
-      ];
-      for (var i = 0; i < diag.length; i++) {
-        var var1 = diag[i][0];
-        var var2 = diag[i][1];
-        var var3 = diag[i][1] + r;
-        var var4 = diag[i][0] + c;
-        if (var3 >= 0 && var3 < 8 && var4 >= 0 && var4 < 8) {
-          var check = Model.array_list[diag[i][1] + r][diag[i][0] + c];
-          if (typeof check !== undefined && check.hasClass(disc_color)) {
-            temp_diag_directions = [
-              [0, 1],
-              [0, -1],
-              [-1, 0],
-              [1, 0],
-              [-1, -1],
-              [1, -1],
-              [-1, 1],
-              [1, 1]
-            ];
-            while (check.hasClass(disc_color)) {
-              temp_diag_directions[i][0] += var1;
-              temp_diag_directions[i][1] += var2;
-              var tempr = r + temp_diag_directions[i][1];
-              var tempc = c + temp_diag_directions[i][0];
-              if (tempr < 0 || tempr > 7 || tempc < 0 || tempc > 7) {
-                break;
-              }
-              check =
-                Model.array_list[r + temp_diag_directions[i][1]][
-                  c + temp_diag_directions[i][0]
-                ];
-              if (check.hasClass(this_color)) {
-                this.legal_moves_array.push(selectDiv);
-                break;
-              }
-            }
-          }
-        }
-      }
-    };
-
     this.clickHandler = function() {
       if(!self.isUserTurn){
-        console.log('wait ur turn punk');
         return false;
       }
       var col = $(this).attr('col');
@@ -312,96 +202,22 @@ var Model = {
             if (err) {
               console.log('error occured');
             }
-            console.log('288 ', res);
-            self.importBoard(res.boardState);
-          }
-        );
-          self.isUserTurn = false;
-          View.highlightTurn(self.otherRole);
-          self.clearLegalMoves();
-      }
-    };
-
-    this.flip = function(color, color_to_replace, x, y) {
-      //flip function
-      var directions = [
-        [-1, -1],
-        [0, -1],
-        [1, -1],
-        [-1, 0],
-        [1, 0],
-        [-1, 1],
-        [0, 1],
-        [1, 1]
-      ];
-      var temp_directions = [
-        [-1, -1],
-        [0, -1],
-        [1, -1],
-        [-1, 0],
-        [1, 0],
-        [-1, 1],
-        [0, 1],
-        [1, 1]
-      ];
-      var arrayOfFlips = [];
-      for (var j = 0; j < directions.length; j++) {
-        var path = [];
-        var d0 = directions[j][0];
-        var d1 = directions[j][1];
-        var temp_y = y + d1;
-        var temp_x = x + d0;
-        if (temp_y >= 0 && temp_y < 8 && temp_x >= 0 && temp_x < 8) {
-          var divTracker = Model.array_list[temp_y][temp_x];
-          if (divTracker.hasClass(color_to_replace)) {
-            temp_directions = [
-              [-1, -1],
-              [0, -1],
-              [1, -1],
-              [-1, 0],
-              [1, 0],
-              [-1, 1],
-              [0, 1],
-              [1, 1]
-            ];
-            while (divTracker.hasClass(color_to_replace)) {
-              path.push(divTracker);
-              temp_directions[j][0] += d0;
-              temp_directions[j][1] += d1;
-              if (
-                y + temp_directions[j][1] < 0 ||
-                y + temp_directions[j][1] > 7 ||
-                x + temp_directions[j][0] < 0 ||
-                x + temp_directions[j][0] > 7
-              ) {
-                break;
-              }
-              divTracker =
-                Model.array_list[y + temp_directions[j][1]][
-                  x + temp_directions[j][0]
-                ];
-              if (divTracker.hasClass(color)) {
-                arrayOfFlips = arrayOfFlips.concat(path);
-                break;
-              }
+            self.importBoard(res.gameState.boardState);
+            self.setTurn(response.gameState.userTurn);
+            if(self.isUserTurn){
+              self.setLegalMoves(response.gameState.allowedMoves);
+              View.highlightTurn(self.role);
+            }
+            else{
+              View.highlightTurn(self.otherRole);
+              self.clearLegalMoves();
             }
           }
-        }
+        );
+          // self.isUserTurn = false;
+          // View.highlightTurn(self.otherRole);
+          // self.clearLegalMoves();
       }
-      for (var i = 0; i < arrayOfFlips.length; i++) {
-        if (self.isUserTurn) {
-          var indexToRemove = this.opponent.indexOf(arrayOfFlips[i]);
-          this.opponent.splice(indexToRemove, 1);
-          this.player.push(arrayOfFlips[i]);
-        } else {
-          var indexToRemove = this.player.indexOf(arrayOfFlips[i]);
-          this.player.splice(indexToRemove, 1);
-          this.opponent.push(arrayOfFlips[i]);
-        }
-        arrayOfFlips[i].removeClass('white-disc black-disc');
-        arrayOfFlips[i].addClass(color);
-      }
-      self.clearLegalMoves();
     };
 
     this.gameOver = function(winner) {
@@ -416,94 +232,12 @@ var Model = {
       }
     };
 
-    this.resetAll = function() {
+    this.handleReset = function() {
       socket.emit('requestNewGame', {
         token: window.localStorage.getItem('token'),
         gameId: getGameId(),
         role: self.role
       });
-    };
-
-    this.legalMoves_old = function(index) {
-      var colNum;
-      var rowNum;
-      this.clearLegalMoves();
-      //for player 1 - black moves
-      if (index === 0) {
-        for (i = 0; i < this.player2.length; i++) {
-          colNum = Model.col_list.indexOf(this.player2[i].attr('col'));
-          rowNum = parseInt(this.player2[i].attr('row'));
-          for (var j = -1; j < 2; j++) {
-            // for rows
-            for (var k = -1; k < 2; k++) {
-              //for columns
-              if (
-                rowNum + j < 0 ||
-                rowNum + j > 7 ||
-                colNum + k < 0 ||
-                colNum + k > 7
-              ) {
-                continue;
-              }
-              var selectDiv = Model.array_list[rowNum + j][colNum + k];
-              if (
-                selectDiv.hasClass('white-disc') ||
-                selectDiv.hasClass('black-disc')
-              ) {
-                continue;
-              } else {
-                for (var b = 0; b < this.player1.length; b++) {
-                  this.searchSpots(selectDiv, 'white-disc', 'black-disc');
-                }
-              }
-            }
-          }
-        }
-      } else {
-        //for player 2 - white moves
-        for (var i = 0; i < this.player1.length; i++) {
-          colNum = Model.col_list.indexOf(this.player1[i].attr('col'));
-          rowNum = parseInt(this.player1[i].attr('row'));
-          for (var j = -1; j < 2; j++) {
-            // for rows
-            for (var k = -1; k < 2; k++) {
-              //for columns
-              if (
-                rowNum + j < 0 ||
-                rowNum + j > 7 ||
-                colNum + k < 0 ||
-                colNum + k > 7
-              ) {
-                continue;
-              }
-              var selectDiv = Model.array_list[rowNum + j][colNum + k];
-              if (
-                selectDiv.hasClass('white-disc') ||
-                selectDiv.hasClass('black-disc')
-              ) {
-                continue;
-              } else {
-                this.searchSpots(selectDiv, 'black-disc', 'white-disc');
-              }
-            }
-          }
-        }
-      }
-      for (var i = 0; i < self.legal_moves_array.length; i++) {
-        self.legal_moves_array[i].addClass('allowedSpot');
-      }
-      if (
-        self.legal_moves_array.length === 0 &&
-        self.player1.length + self.player2.length < 64
-      ) {
-        if (self.turn === self.player_list[1]) {
-          self.turn = self.player_list[0];
-          self.legalMoves(0);
-        } else {
-          self.turn = self.player_list[1];
-          self.legalMoves(1);
-        }
-      }
     };
   }
 };
@@ -511,7 +245,7 @@ var Model = {
 var View = {
   initEventHandlers: function(self) {
     $('.rows > div').click(self.clickHandler);
-    $('.reset').click(self.resetAll);
+    $('.reset').click(self.handleReset);
     $('.modal').click(this.closeModal);
   },
 
@@ -537,7 +271,7 @@ var View = {
     }
   },
 
-  audioCallback: function() {
+  toggleAudio: function() {
     var audio_dom = document.getElementById('sw_audio');
     if (audio_dom.paused) {
       audio_dom.play();
@@ -601,7 +335,6 @@ var View = {
   clearBoard: function(){
     Model.array_list.forEach(function(row){
       row.forEach(function(cell){
-        console.log(cell);
         cell.removeClass('black-disc white-disc allowedSpot');
       })
     })
@@ -649,7 +382,7 @@ var View = {
 
 var Controller = {
   handleOnLoad: function() {
-    $('.audio-btn').click(View.audioCallback);
+    $('.audio-btn').click(View.toggleAudio);
     View.generateSpots();
     Model.createGameObj();
     Controller.handleChatSubmit();
