@@ -153,9 +153,16 @@ var Model = {
       if(!this.role){
         return console.log('invalid role');
       }
-      if(this.role ==='black' && userTurn === 'sith' || this.role === 'white' && userTurn === 'jedi'){
+      if(this.role === "black" && userTurn === "sith"){
         this.isUserTurn = true;
       }
+      if(this.role === 'white' && userTurn === 'jedi'){
+        this.isUserTurn = true;
+      }
+
+      // if((this.role ==='black' && userTurn === 'sith') || (this.role === 'white' && userTurn === 'jedi')){
+      //   this.isUserTurn = true;
+      // }
     };
 
     this.setLegalMoves = function(legalMoves) {
@@ -190,6 +197,7 @@ var Model = {
         return move.attr('row') == rowNum && move.attr('col') == col;
       });
       if (allowedMove) {
+        self.isUserTurn = false;
         socket.emit(
           'setMove',
           {
@@ -202,10 +210,13 @@ var Model = {
             if (err) {
               console.log('error occured');
             }
-            self.importBoard(res.gameState.boardState);
-            self.setTurn(response.gameState.userTurn);
+            // console.log(res);
+            // console.log(self.isUserTurn);
+            self.importBoard(res.boardState);
+            self.setTurn(res.userTurn);
+            // console.log(self.isUserTurn);
             if(self.isUserTurn){
-              self.setLegalMoves(response.gameState.allowedMoves);
+              self.setLegalMoves(res.allowedMoves);
               View.highlightTurn(self.role);
             }
             else{
