@@ -402,6 +402,13 @@ body{
     
 }
 
+#othello-help{
+    position:absolute;
+    right: 10px;
+    bottom: 10px;
+    font-size: 20px;
+    color: yellow;
+}
 @media only screen and (max-width: 1000px){
     #back-board > div > div{
         height: 7vw;

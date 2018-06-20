@@ -36,7 +36,7 @@ app.use((req, res, next) => {
 
 io.on('connection', socket => {
   socket.on('validateUser', (response, callback) => {
-    if (!response.token) {
+    if (!response.token || response.token === "undefined") {
       console.log('no token. creating new user');
       var user = new User({
         _id: new ObjectID(),
@@ -229,9 +229,16 @@ io.on('connection', socket => {
       // console.log(othelloGame);
       if(othelloGame.gameState.winner.role){
         // console.log('winner poggers');
+        var usersInGame = othello.getActiveUsers(res.gameId);
         io.in(res.gameId).emit('gameOver', {
           winner: othelloGame.gameState.winner.role
         })
+        io.in(res.gameId).emit('serverMessage', {
+          from: 'server',
+          message: `User ${othelloGame.gameState.winner.userName} has won!`,
+          activeUsers: usersInGame
+        });
+
       }
 
     }).catch(err => console.log(err));

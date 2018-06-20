@@ -18,7 +18,7 @@ var OthelloSchema = new mongoose.Schema({
     jedi: {
       userName: {
           type: String,
-          trime: true,
+          trim: true,
           required: true
       },
       _id: {
@@ -79,6 +79,11 @@ var OthelloSchema = new mongoose.Schema({
     boardState: [{0:String, 1:String,2:String,3:String,4:String,5:String,6:String,7:String}],
     allowedMoves: mongoose.Schema.Types.Mixed,
     winner:{
+        userName: {
+          type: String,
+          trim: true,
+          default: null
+        },
         _id:{
           type: ObjectId,
           default: null
@@ -109,6 +114,7 @@ var defaultGameState = {
   boardState: defaultBoardState,
   allowedMoves: [{'row': 2, 'col': 3}, {'row': 3, 'col': 2}, {'row': 4, 'col': 5}, {'row': 5, 'col': 4}],
   winner: {
+    userName: null,
     _id: null,
     role: null
   }
@@ -202,12 +208,13 @@ OthelloSchema.methods.validateMove = function(role, coordinates){
         if(isGameOver(othelloGame.gameState.boardState)){
           winner = determineWinner(othelloGame.gameState.boardState);
           othelloGame.gameState.winner = {
+            userName: othelloGame.players[winner].userName,
             _id: othelloGame.players[winner]._id,
             role: winner
           }
         othelloGame.gameState.allowedMoves = [];
         othelloGame.gameState.isActive = false;
-        }else{
+        } else {
           othelloGame.gameState.allowedMoves = updateAllowedMoves(othelloGame.gameState.boardState, opponentPiece, userPiece);
           if(othelloGame.gameState.allowedMoves.length === 0){
             console.log(`no moves available for ${opponentPiece} player`);
@@ -216,8 +223,8 @@ OthelloSchema.methods.validateMove = function(role, coordinates){
             if(othelloGame.gameState.allowedMoves.length === 0){
               console.log('no moves for either player');
               winner = determineWinner(othelloGame.gameState.boardState);
-              // othelloGame.gameState.winner._id = othelloGame.players[winner]._id;
               othelloGame.gameState.winner = {
+                userName: othelloGame.players[winner].userName,
                 _id: othelloGame.players[winner]._id,
                 role: winner
               }
