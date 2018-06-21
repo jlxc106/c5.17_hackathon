@@ -83,8 +83,8 @@ var Model = {
 
   GameObj: function() {
     var self = this;
-    this.role;
-    this.otherRole;
+    // this.role;
+    // this.otherRole;
     this.player = [];
     this.opponent = [];
     this.isUserTurn = false;
@@ -98,15 +98,28 @@ var Model = {
         console.log('invalid role');
         throw new Error('invalid role');
       }
-      this.role = res.role;
+      // this.role = res.role;
+      Object.defineProperty(this, 'role', {
+        configurable: false,
+        writable: false,
+        value: res.role
+      })
       if (this.role === 'black') {
-        this.otherRole = 'white';
+        Object.defineProperty(this, 'otherRole', {
+          configurable: false,
+          writable: false,
+          value: 'white'
+        })
         this.whitePlayerByRef = this.opponent;
         this.blackPlayerByRef = this.player;
       } else {
+        Object.defineProperty(this, 'otherRole', {
+          configurable: false,
+          writable: false,
+          value: 'black'
+        })
         this.whitePlayerByRef = this.player;
         this.blackPlayerByRef = this.opponent;
-        this.otherRole = 'black';
       }
       this.setTurn(res.userTurn);
       this.importBoard(res.boardState);

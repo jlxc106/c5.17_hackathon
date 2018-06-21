@@ -62,8 +62,6 @@ socket.on('connect', function(){
     const token = window.localStorage.getItem('token') ? window.localStorage.getItem('token') : null;
     // console.log(token);
     socket.emit('validateUser', {token: token}, function(err, response){
-        console.log('server response: ', response);
-        console.log(err);
         if(err && response.token){
             console.log(err);
             window.localStorage.setItem('token', response.token);
@@ -75,10 +73,8 @@ socket.on('connect', function(){
 })
 
 socket.on('foundOthelloGame', function(response){
-    console.log('found game response: ',response);
     window.location = `${response.path}`
 })
-
 
 var fillUserNameInput = function(){
     var userName = window.localStorage.getItem('userName');
