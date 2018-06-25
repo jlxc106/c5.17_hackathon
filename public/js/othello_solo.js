@@ -344,8 +344,8 @@ var Model = {
 
     //view
     this.displayDiscs = function() {
-      $('.player1-value').html(this.player1.length);
-      $('.player2-value').html(this.player2.length);
+      $('.sith-score').html(this.player1.length);
+      $('.jedi-score').html(this.player2.length);
     };
 
     this.resetAll = function() {

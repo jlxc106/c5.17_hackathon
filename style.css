@@ -1,0 +1,459 @@
+#particles-js{
+    background: black;
+    height: 100vh;
+    width: 100vw;
+}
+
+@font-face {
+    font-family: coolFont;
+    src: url(public/css/font/coolFont.ttf);
+}
+@font-face {
+    font-family: badfont;
+    src: url(public/css/font/badfont.otf);
+}
+@font-face {
+    font-family: starwarsmain;
+    src: url(public/css/font/starwarsmain.ttf);
+}
+
+#index-body{
+    background: skyblue;
+    font-size: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+#center-container{
+    width: 40vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+}
+
+button{
+    color: black;
+    border: 3px solid black;
+}
+
+.active-btn:hover, .active-btn:focus{
+    color: #fff;
+    background: black;
+}
+
+.btn-choose-game{
+    font-family: Helvetica;
+    font-size: 30px;
+    font-weight: bold;
+    width: 97%;
+    display: block;
+    height: 15vh;
+    margin: 3% auto;
+}
+
+#center-container >  div{
+    width: 100%;
+    margin: 3px auto 3px;
+}
+
+/* #select-game-type, #btn-select-game-mode, #collect-player-info{
+    display: none;
+} */
+
+#collect-player-info{
+    font-size: 30px;
+}
+
+#collect-player-info form{
+    margin: 5px auto 5px;
+    width: 80%;
+    padding: 10px;
+}
+
+#input-name{
+    background-color:  #f2f2f2;
+    border: 1px solid black;
+    max-width: 100%;
+}
+
+#send-icon{
+    display:none;
+}
+
+#messages{
+    height: 93%;
+    list-style-type: none;
+    overflow-y: auto;
+    padding: 2px;
+    margin-top:5px;
+}
+
+.message-white > span{
+    font-weight:bold;
+    color: blue
+}
+
+.message-black > span{
+    font-weight: bold;
+    color: red;
+}
+
+#invalid-name-warning{
+    display: none;
+    font-size: 20px;
+    color: red;
+}
+
+#collect-player-info button{
+    display: block;
+    margin: 10px auto 5px;
+}
+
+.soontm-tooltip{
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: white;
+    text-align: center;
+    position: absolute;
+    padding: 5px 0;
+    z-index: 3;
+}
+
+.display-tooltip:hover + .soontm-tooltip{
+    visibility: visible;
+}
+
+#btn-select-game-mode{
+    position: absolute;
+    font-size: 30px;
+}
+
+#user-info-form > div{
+    text-align:center;
+}
+
+#return-img{
+    width: 30px;
+}
+
+#index-body a{
+    text-decoration: none;
+}
+
+body{
+    font-size: 0;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0 auto;
+    background-image: url(public/css/images/forestbackground.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+.game-title,
+.game-subtitle{
+    font-family: badFont;
+    font-size: 120px;
+    color: black;
+    text-align: center;
+    font-weight: bolder;
+    margin: 20px 0 0;
+    text-shadow:
+            6px 6px white,
+            -6px 6px white,
+            6px -6px white,
+            -6px -6px white,
+            6px 6px 9px white;
+}
+.game-subtitle{
+    font-family: starwarsmain;
+    font-size: 40px;
+    margin: 10px 0 10px;
+    text-shadow:
+            3px 3px white,
+            -3px 3px white,
+            3px -3px white,
+            -3px -3px white,
+            3px 3px 5px white;
+}
+#back-board{
+    display: block;
+    margin: 0 auto 0;
+}
+.game-contents > div:nth-child(2){
+    overflow:auto;
+}
+
+#back-board > div > div{
+    background-color: #27660c;
+    border: 2px solid black;
+    display: inline-block;
+    height: 70px;
+    width: 70px;
+}
+.game-contents{
+    text-align: center;
+}
+.stats_container{
+    height: 200px;
+    position: relative;
+    display: inline-block;
+    border-radius: 10px;
+    text-align: center;
+    padding: 10px;
+}
+
+.player-info{
+    font-size: 20px;
+    font-weight: bold;
+}
+.jedi-name,
+.sith-name{
+    font-family: starwarsmain;
+    margin: 30px 0 10px;
+    font-size: 40px;
+    text-shadow:
+            3px 3px white,
+            -3px 3px white,
+            3px -3px white,
+            -3px -3px white,
+            3px 3px 5px white;
+}
+.jedi-score,
+.sith-score{
+    margin: 0 0 20px;
+    color: darkred;
+    font-family: coolFont;
+    font-size: 40px;
+    text-shadow:
+            2px 2px white,
+            -2px 2px white,
+            2px -2px white,
+            -2px -2px white,
+            2px 2px 5px white;
+}
+/* #player-imageOne,
+#player-imageTwo {
+    width: 150px;
+    height: auto;
+    border: 3px solid black;
+    box-shadow: 0 0 30px 2px whitesmoke;
+} */
+#reset-button{
+    margin-top: 20px;
+    display: inline-block;
+}
+.button{
+    height: 50px;
+    border-radius: 30px;
+    font-size: 30px;
+    font-family: coolFont;
+    color: white;
+    background-color: black;
+    display: inline-block;
+}
+
+.button:hover, .button:focus {
+    text-decoration: none;
+    color: white;
+    background-color: black;
+    outline:none;
+}
+.white-disc{
+    background-image: url(public/css/images/jedi1.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+.black-disc{
+    background-image: url(public/css/images/Sith_Logo.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.alternateHideImg {
+    display: none;
+}
+.allowedSpot{
+    background-image: url("public/css/images/allowed_pic.gif");
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+.allowedSpot:hover{
+    background-image: url("public/css/images/vader_dodge.gif");
+    background-size: cover;
+}
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+.sith-win-gif {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 499px;
+    height: 500px;
+    background-image: url(public/css/images/dancingvader.gif);
+    background-size:cover;
+    background-repeat:no-repeat;
+}
+.jedi-win-gif {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 499px;
+    height: 500px;
+    background-image: url(public/css/images/dancingyoda.gif);
+    background-size:cover;
+    background-repeat:no-repeat;
+    bottom:294px;
+}
+
+.opacity_1{
+    opacity: 1;
+}
+.opacity_05{
+    opacity: 0.5;
+}
+
+.close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.audio-btn{
+    font-size: 21px;
+    position: absolute;
+    left: 10%;
+    top: 10%;
+}
+
+.chat-div{
+    width: 100%;
+    margin: 0 3px 3px 3px;
+    position:relative;
+    height:90vh;
+}
+
+.chat-header{
+    padding: 3px;
+    width: 100%;
+    background: #e6e6e6;
+    font-size: 30px;
+    color: black;
+    margin: 6px 3px 0px 3px;
+}
+
+.chat-header > p {
+    text-align: center;
+    margin: 0;
+}
+
+.chat__footer{
+    font-size: 15px;
+    margin: 5px;
+    height:46px;
+    bottom:0;
+    position: relative;
+}
+
+#input_message{
+    height: 34px;
+    width: 100%;
+    border: 1px solid black;
+}
+
+#contain-chat-input{
+    display: inline-block;
+    width: 80%;
+}
+
+#message-form{
+    width: 95%;
+    margin: auto;
+    padding-top: 6px;
+}
+#send_button{
+    display: inline-block;
+    font-weight: bold;
+    max-width: 18%;
+}
+
+.chat{
+    padding: 0 5px 0 5px;
+    right: 10px;
+    background:white;
+    margin: 10px 0 10px;
+}
+
+.li-server-message{
+    font-size: 15px;
+    background: #f2f2f2
+}
+
+.li-message{
+    font-size: 14px
+}
+
+#volume-on-icon{
+    display:block;
+}
+#volume-off-icon{
+    display: none;
+}
+
+.chat-new-game{
+    float: right;
+    
+}
+
+.showModal{
+    display:block;
+}
+
+#othello-help{
+    position:absolute;
+    right: 20px;
+    bottom: 20px;
+    font-size: 20px;
+    color: white;
+}
+@media only screen and (max-width: 1000px){
+    #back-board > div > div{
+        height: 7vw;
+        width: 7vw;
+    }
+
+    #contain-chat-input{
+        max-width: 78%
+    }
+}
+
+
+@media only screen and (max-width: 1300px){
+    #send-icon{
+        display:block;
+    }
+    #send-text{
+        display:none;
+    }
+}

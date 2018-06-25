@@ -14,13 +14,24 @@ const { User } = require('./models/user');
 const { Othello } = require('./othello/othello');
 const { OthelloModel } = require('./models/othello_model');
 const publicPath = path.join(__dirname, '../public');
-
+// const publicPath2 = path.join(__dirname, '..')
 const app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
 const port = process.env.PORT || 3000;
 
-app.use(express.static(publicPath));
+
+
+
+// // app.use(express.static("."));
+// app.use(express.static(publicPath2));
+
+// app.get("/", (req, res)=>{
+//   res.sendFile(path.resolve(__dirname, "..", "index.html"));
+// })
+// // app.get();
+
+// app.use(express.static(publicPath));
 var othello = new Othello();
 
 app.use((req, res, next) => {
