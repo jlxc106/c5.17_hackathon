@@ -159,7 +159,6 @@ io.on('connection', socket => {
               return;
             } else if (othello.addUserToWaitingList(result)) {
               const gameId = new ObjectID().toHexString();
-              // console.log('gameId: ', gameId);
               othello
                 .addUsersToGame(gameId)
                 .then(players => {
@@ -168,11 +167,11 @@ io.on('connection', socket => {
                       socket
                         .to(player.socketId)
                         .emit('foundOthelloGame', {
-                          path: `othello2.html?numPlayers=2&id=${gameId}`
+                          gameId: gameId
                         });
                     } else {
                       socket.emit('foundOthelloGame', {
-                        path: `othello2.html?numPlayers=2&id=${gameId}`
+                        gameId: gameId
                       });
                     }
                   });

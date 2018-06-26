@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-// import OthelloBoard from './othelloBoard';
 import Row from './row';
+
 class OthelloDuo extends Component {
   constructor(props) {
     super(props);
@@ -12,6 +12,10 @@ class OthelloDuo extends Component {
       //player1 is black -- player2 is white
       player1: [[3, 4], [4, 3]],
       player2: [[3, 3], [4, 4]],
+      userName: null,
+      role: null,
+      userColor: null,
+      opponentColo: null,
       turn: 'player 1',
       legal_moves_array: [[2, 3], [3, 2], [4, 5], [5, 4]],
       boardState: [
@@ -30,12 +34,6 @@ class OthelloDuo extends Component {
     this.hideModal = this.hideModal.bind(this);
     this.handleReset = this.handleReset.bind(this);
   }
-
-  componentDidMount() {
-    this.initGame();
-  }
-
-  initGame() {}
 
   alternateTurn() {
     if (this.state.turn === 'player 1') {
@@ -293,13 +291,13 @@ class OthelloDuo extends Component {
         ['0', '0', '0', '0', '0', '0', '0', '0'],
         ['0', '0', '0', '0', '0', '0', '0', '0']
       ]
-    })
+    });
   }
 
-  hideModal(){
+  hideModal() {
     this.setState({
       showModal: false
-    })
+    });
   }
 
   handleGameOver() {
@@ -317,7 +315,7 @@ class OthelloDuo extends Component {
     this.setState({
       winner,
       showModal: true
-    })
+    });
   }
 
   handleUserTurn(row, column) {
@@ -390,12 +388,12 @@ class OthelloDuo extends Component {
   }
 
   render() {
-    let displayJediWin = '', displaySithWin = '';
-    if(this.state.showModal){
-      if(this.state.winner === 'player 1'){
+    let displayJediWin = '',
+      displaySithWin = '';
+    if (this.state.showModal) {
+      if (this.state.winner === 'player 1') {
         displaySithWin = 'showModal';
-      }
-      else if(this.state.winner === 'player 2'){
+      } else if (this.state.winner === 'player 2') {
         displayJediWin = 'showModal';
       }
     }
@@ -419,82 +417,94 @@ class OthelloDuo extends Component {
     });
 
     return (
-      <div className="col-xs-12 othello">
-        <audio
-          id="sw_audio"
-          className="audio_class"
-          loop
-          preload="auto"
-          src="public/css/audio/Star-Wars-Duel-of-the-Fates.mp3"
-        />
-        <h2 className="game-title">Othello</h2>
-        <h3 className="game-subtitle">Jedi vs. Sith</h3>
-        <div className="game-contents">
-          <div id="back-board">{row}</div>
-          <div>
-            <div
-              className={
-                'stats_container col-xs-offset-2 col-xs-2 ' + jedi_opacity
-              }
-              id="jedi-stats"
-            >
-              <div className="player-info" id="jedi-info">
-                <p className="jedi-name">
-                  Jedi<span />
-                </p>
-                <p className="jedi-score">{this.state.player2.length}</p>
+      <div>
+        <div className="col-xs-9 othello">
+          <audio
+            id="sw_audio"
+            className="audio_class"
+            loop
+            preload="auto"
+            src="public/css/audio/Star-Wars-Duel-of-the-Fates.mp3"
+          />
+          <h2 className="game-title">Othello</h2>
+          <h3 className="game-subtitle">Jedi vs. Sith</h3>
+          <div className="game-contents">
+            <div id="back-board">{row}</div>
+            <div>
+              <div
+                className={"stats_container col-xs-offset-2 col-xs-2 " + jedi_opacity}
+                id="jedi-stats"
+              >
+                <div className="player-info" id="jedi-info">
+                  <p className="jedi-name">
+                    Jedi
+                    <span />
+                  </p>
+                  <p className="jedi-score">{this.state.player2.length}</p>
+                </div>
+              </div>
+              <div className="col-xs-offset-1 col-xs-2" id="reset-button">
+                <button type="button" className="button reset" onClick={this.handleReset}>
+                  RESET
+                </button>
+              </div>
+              <div
+                className={"stats_container col-xs-offset-1 col-xs-2 " + sith_opacity}
+                id="sith-stats"
+              >
+                <div className="player-info" id="sith-info">
+                  <p className="sith-name">
+                    Sith
+                    <span />
+                  </p>
+                  <p className="sith-score">{this.state.player1.length}</p>
+                </div>
               </div>
             </div>
-            <div className="col-xs-offset-1 col-xs-2" id="reset-button">
-              <button
-                type="button"
-                className="button reset"
-                onClick={this.handleReset}
-              >
-                RESET
+            <div>
+              <button className="button btn btn-light audio-btn" onClick={this.audioCallback}>
+                <span id="volume-on-icon">
+                  <i className="fas fa-volume-up" />
+                </span>
+                <span id="volume-off-icon">
+                  <i className="fas fa-volume-off" />
+                </span>
               </button>
             </div>
-            <div
-              className={
-                'stats_container col-xs-offset-1 col-xs-2 ' + sith_opacity
-              }
-              id="sith-stats"
-            >
-              <div className="player-info" id="sith-info">
-                <p className="sith-name">
-                  Sith<span />
-                </p>
-                <p className="sith-score">{this.state.player1.length}</p>
-              </div>
+          </div>
+          <div id="contain-sith-gif" className={"modal " + displaySithWin} onClick={this.hideModal}>
+            <div className="sith-win-gif" />
+          </div>
+          <div id="contain-jedi-gif" className={"modal " + displayJediWin} onClick={this.hideModal}>
+            <div className="jedi-win-gif" />
+          </div>
+        </div>
+        <div className="col-xs-3 chat">
+          <div className="chat-header">
+            <p>Chat Lobby</p>
+          </div>
+          <div className="chat-div">
+            <ul id="messages" className="chat__messages" />
+            <div className="chat__footer">
+              <form id="message-form">
+                <div id="contain-chat-input">
+                  <input
+                    name="message"
+                    type="text"
+                    className="form-input"
+                    id="input_message"
+                    placeholder="send message"
+                    autoFocus
+                    autoComplete="off"
+                  />
+                </div>
+                <button className="btn btn-success" id="send_button" onClick={this.handleChatSubmit}>
+                  <i className="fas fa-paper-plane" id="send-icon" />
+                  <span id="send-text">send</span>
+                </button>
+              </form>
             </div>
           </div>
-          <div>
-            <button
-              className="button btn btn-light audio-btn"
-              onClick={this.audioCallback}
-            >
-              <span id="volume-on-icon">
-                <i className="fas fa-volume-up" />
-              </span>
-              <span id="volume-off-icon">
-                <i className="fas fa-volume-off" />
-              </span>
-            </button>
-          </div>
-        </div>
-        <div
-          id={'contain-sith-gif'}
-          className={'modal ' + displaySithWin}
-          onClick={this.hideModal}
-        >
-          <div className="sith-win-gif" />
-        </div>
-        <div
-          id={'contain-jedi-gif'}
-          className={'modal ' + displayJediWin}
-          onClick={this.hideModal}
-        >
-          <div className="jedi-win-gif" />
         </div>
       </div>
     );
@@ -502,3 +512,82 @@ class OthelloDuo extends Component {
 }
 
 export default OthelloDuo;
+
+// <div className="col-xs-12 othello">
+//         <audio
+//           id="sw_audio"
+//           className="audio_class"
+//           loop
+//           preload="auto"
+//           src="public/css/audio/Star-Wars-Duel-of-the-Fates.mp3"
+//         />
+//         <h2 className="game-title">Othello</h2>
+//         <h3 className="game-subtitle">Jedi vs. Sith</h3>
+//         <div className="game-contents">
+//           <div id="back-board">{row}</div>
+//           <div>
+//             <div
+//               className={
+//                 'stats_container col-xs-offset-2 col-xs-2 ' + jedi_opacity
+//               }
+//               id="jedi-stats"
+//             >
+//               <div className="player-info" id="jedi-info">
+//                 <p className="jedi-name">
+//                   Jedi<span />
+//                 </p>
+//                 <p className="jedi-score">{this.state.player2.length}</p>
+//               </div>
+//             </div>
+//             <div className="col-xs-offset-1 col-xs-2" id="reset-button">
+//               <button
+//                 type="button"
+//                 className="button reset"
+//                 onClick={this.handleReset}
+//               >
+//                 RESET
+//               </button>
+//             </div>
+//             <div
+//               className={
+//                 'stats_container col-xs-offset-1 col-xs-2 ' + sith_opacity
+//               }
+//               id="sith-stats"
+//             >
+//               <div className="player-info" id="sith-info">
+//                 <p className="sith-name">
+//                   Sith<span />
+//                 </p>
+//                 <p className="sith-score">{this.state.player1.length}</p>
+//               </div>
+//             </div>
+//           </div>
+//           <div>
+//             <button
+//               className="button btn btn-light audio-btn"
+//               onClick={this.audioCallback}
+//             >
+//               <span id="volume-on-icon">
+//                 <i className="fas fa-volume-up" />
+//               </span>
+//               <span id="volume-off-icon">
+//                 <i className="fas fa-volume-off" />
+//               </span>
+//             </button>
+//           </div>
+//         </div>
+//         <div
+//           id={'contain-sith-gif'}
+//           className={'modal ' + displaySithWin}
+//           onClick={this.hideModal}
+//         >
+//           <div className="sith-win-gif" />
+//         </div>
+//         <div
+//           id={'contain-jedi-gif'}
+//           className={'modal ' + displayJediWin}
+//           onClick={this.hideModal}
+//         >
+//           <div className="jedi-win-gif" />
+//         </div>
+//       </div>

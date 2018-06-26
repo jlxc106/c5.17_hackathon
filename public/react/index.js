@@ -10,24 +10,30 @@ class HomePage extends Component {
     this.state = {
       viewPanel: 'selectGame',
       userName: null,
+      token: null,
+      showInvalidNameText: false
     };
     this.handleBackButton = this.handleBackButton.bind(this);
     this.changeView = this.changeView.bind(this);
 
-    socket.on('connect', function() {
-      const token = window.localStorage.getItem('token')
-        ? window.localStorage.getItem('token')
-        : null;
+    socket.on('connect', () => {
+      // if(this.state.)
+      const token = this.state.token || window.localStorage.getItem('token') || null;
+      // const token = window.localStorage.getItem('token')
+      //   ? window.localStorage.getItem('token')
+      //   : null;
       // console.log(token);
       socket.emit('validateUser', { token: token }, function(err, response) {
         if (err && response.token) {
-          console.log(err);
+          // console.log(err);
           window.localStorage.setItem('token', response.token);
         } else if (response.userName && response.userName !== 'anon') {
           window.localStorage.setItem('userName', response.userName);
         }
       });
     });
+
+    this.handleOnSubmit = this.handleOnSubmit.bind(this);
   }
 
   changeView(panelType) {
@@ -35,60 +41,67 @@ class HomePage extends Component {
   }
 
   componentDidMount() {
-    var userName = window.localStorage.getItem('userName');
-    if (userName !== 'anon' && userName && userName.length > 0) {
-      this.setState({userName});
+    this.setState({
+      userName: window.localStorage.getItem('userName')
+        ? window.localStorage.getItem('userName')
+        : null,
+      token: window.localStorage.getItem('token')
+        ? window.localStorage.getItem('token')
+        : null
+    });
+    // var userName = window.localStorage.getItem('userName');
+    // if (userName !== 'anon' && userName && userName.length > 0) {
+
       // $('#input-name').attr('placeholder', userName);
-    }
+    // }
     // console.log(userName);
   }
 
-  handleOnSubmit(){
-      let userName = $('#input-name').val();
-      let findButton = $('#submit-user-info');
-      if(!userName || userName.trim().length < 1){
-          console.log('invalid user name');
-          $('#invalid-name-warning').css('display', 'block');
-          return;
-      }
-      findButton.html("Looking for game...");
-      findButton.attr('disabled', true);
-      socket.emit('searchOthello', {
-          "userName": userName,
-          "token": window.localStorage.getItem('token')
-      }, function(err, response){
+  handleOnSubmit() {
+    let userName = $('#input-name').val();
+    let findButton = $('#submit-user-info');
+    if (!userName || userName.trim().length < 1) {
+      // console.log('invalid user name');
+      this.setState({showInvalidNameText: true})
+      return;
+    }
+    this.setState({showInvalidNameText: false})
+    findButton.html('Looking for game...');
+    findButton.attr('disabled', true);
+    socket.emit(
+      'searchOthello',
+      {
+        userName: userName,
+        token: window.localStorage.getItem('token')
+      },
+      function(err, response) {
         console.log(response);
-          if(err){
-              console.log(`error finding game`);
-          }
-      });
+        if (err) {
+          console.log(`error finding game`);
+        }
+      }
+    );
   }
 
-  handleBackButton(){
-    this.setState({viewPanel: 'selectGame'})
+  handleBackButton() {
+    this.setState({ viewPanel: 'selectGame' });
   }
-
 
   render() {
-    var {userName} = this.state;
-    // socket.on('foundOthelloGame', function(response) {
-    //   console.log(response);
-    //   console.log(self)
-    //   self.props.history.push('/othello_duo')
-    //   //"othello2.html?numPlayers=2&id=5b3168c80e70ae1d7fd6a900"
-    //   // window.location = `othello_duo`
-    //   // window.location = `${response.path}`;
-    // });
 
-    socket.on('foundOthelloGame', (response) => {
+    var {showInvalidNameText, userName } = this.state;
+
+    let invalidNameText = 'hideWarningText';
+    if(showInvalidNameText){
+      invalidNameText = 'showWarningText';
+    }
+
+    socket.on('foundOthelloGame', response => {
       console.log(response);
-      console.log(this)
-      this.props.history.push('/othello_duo')
-      //"othello2.html?numPlayers=2&id=5b3168c80e70ae1d7fd6a900"
-      // window.location = `othello_duo`
-      // window.location = `${response.path}`;
+      var gameId = response.gameId;
+      window.localStorage.setItem('gameId', gameId);
+      this.props.history.push('/othello_duo');
     });
-
 
     let { viewPanel } = this.state;
     let panelDOM = null;
@@ -118,14 +131,14 @@ class HomePage extends Component {
         <div id="select-game-type">
           <form>
             <Link to="/othello_solo">
-            <button
-              className="active-btn btn-choose-game othello-one-player"
-              name="numPlayers"
-              value="1"
-              type="button"
-            >
-              Single Player
-            </button>
+              <button
+                className="active-btn btn-choose-game othello-one-player"
+                name="numPlayers"
+                value="1"
+                type="button"
+              >
+                Single Player
+              </button>
             </Link>
             <button
               className="btn-choose-game othello-one-player"
@@ -142,6 +155,7 @@ class HomePage extends Component {
               name="numPlayers"
               value="2"
               type="button"
+              disabled
               onClick={() => this.changeView('collectUserInfo')}
             >
               Two Player
@@ -155,8 +169,14 @@ class HomePage extends Component {
           <form id="user-info-form">
             <div className="form-field">
               <label htmlFor="">Display name</label>
-              <input id="input-name" type="text" name="name" value={userName} autoFocus={true} />
-              <span id="invalid-name-warning">invalid user name</span>
+              <input
+                id="input-name"
+                type="text"
+                name="name"
+                placeholder={userName}
+                autoFocus={true}
+              />
+              <span id="invalid-name-warning" className={invalidNameText}>invalid user name</span>
             </div>
             <button
               id="submit-user-info"
@@ -175,8 +195,7 @@ class HomePage extends Component {
 
     if (this.state.viewPanel !== 'selectGame') {
       button = (
-        <button id="btn-select-game-mode"
-        onClick={this.handleBackButton}>
+        <button id="btn-select-game-mode" onClick={this.handleBackButton}>
           Back
         </button>
       );
@@ -184,11 +203,9 @@ class HomePage extends Component {
 
     return (
       <div id="particles-js">
-        <script>
-          {particlesJS.load('particles-js', 'particles.json')}
-        </script>
+        <script>{particlesJS.load('particles-js', 'particles.json')}</script>
         <div id="center-container">{panelDOM}</div>
-          {button}
+        {button}
         <a
           href="https://www.youtube.com/watch?v=Ol3Id7xYsY4"
           id="othello-help"

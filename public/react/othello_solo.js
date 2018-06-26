@@ -31,12 +31,6 @@ class OthelloSolo extends Component {
     this.handleReset = this.handleReset.bind(this);
   }
 
-  componentDidMount() {
-    this.initGame();
-  }
-
-  initGame() {}
-
   alternateTurn() {
     if (this.state.turn === 'player 1') {
       return 'player 2';
@@ -483,14 +477,14 @@ class OthelloSolo extends Component {
           </div>
         </div>
         <div
-          id={'contain-sith-gif'}
+          id='contain-sith-gif'
           className={'modal ' + displaySithWin}
           onClick={this.hideModal}
         >
           <div className="sith-win-gif" />
         </div>
         <div
-          id={'contain-jedi-gif'}
+          id='contain-jedi-gif'
           className={'modal ' + displayJediWin}
           onClick={this.hideModal}
         >

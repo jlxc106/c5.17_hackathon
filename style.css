@@ -102,7 +102,7 @@ button{
 }
 
 #invalid-name-warning{
-    display: none;
+    /* display: none; */
     font-size: 20px;
     color: red;
 }
@@ -428,6 +428,14 @@ body{
 
 .showModal{
     display:block;
+}
+
+.hideWarningText{
+    display: none;
+}
+
+.showWarningText{
+    display: block;
 }
 
 #othello-help{
