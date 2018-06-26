@@ -8,55 +8,12 @@ class HomePage extends Component {
     super(props);
 
     this.state = {
-      viewPanel: 'selectGame'
+      viewPanel: 'selectGame',
+      userName: null,
     };
     this.handleBackButton = this.handleBackButton.bind(this);
     this.changeView = this.changeView.bind(this);
-  }
 
-  changeView(panelType) {
-    this.setState({ viewPanel: panelType });
-  }
-
-  componentDidMount() {
-    var userName = window.localStorage.getItem('userName');
-    if (userName !== 'anon' && userName && userName.length > 0) {
-      $('#input-name').attr('placeholder', userName);
-    }
-    // console.log(userName);
-  }
-
-  handleOnSubmit(){
-      console.log('clicked bruh');
-      let userName = $('#input-name').val();
-      let findButton = $('#submit-user-info');
-      if(!userName || userName.trim().length < 1){
-          console.log('invalid user name');
-          $('#invalid-name-warning').css('display', 'block');
-          return;
-      }
-      findButton.html("Looking for game...");
-      findButton.attr('disabled', true);
-      socket.emit('searchOthello', {
-          "userName": userName,
-          "token": window.localStorage.getItem('token')
-      }, function(err, response){
-          if(err){
-              console.log(`error finding game`);
-          }
-          else{
-              
-          }
-      });
-    
-  }
-
-  handleBackButton(){
-    this.setState({viewPanel: 'selectGame'})
-  }
-
-
-  render() {
     socket.on('connect', function() {
       const token = window.localStorage.getItem('token')
         ? window.localStorage.getItem('token')
@@ -71,10 +28,67 @@ class HomePage extends Component {
         }
       });
     });
+  }
 
-    socket.on('foundOthelloGame', function(response) {
-      window.location = `${response.path}`;
+  changeView(panelType) {
+    this.setState({ viewPanel: panelType });
+  }
+
+  componentDidMount() {
+    var userName = window.localStorage.getItem('userName');
+    if (userName !== 'anon' && userName && userName.length > 0) {
+      this.setState({userName});
+      // $('#input-name').attr('placeholder', userName);
+    }
+    // console.log(userName);
+  }
+
+  handleOnSubmit(){
+      let userName = $('#input-name').val();
+      let findButton = $('#submit-user-info');
+      if(!userName || userName.trim().length < 1){
+          console.log('invalid user name');
+          $('#invalid-name-warning').css('display', 'block');
+          return;
+      }
+      findButton.html("Looking for game...");
+      findButton.attr('disabled', true);
+      socket.emit('searchOthello', {
+          "userName": userName,
+          "token": window.localStorage.getItem('token')
+      }, function(err, response){
+        console.log(response);
+          if(err){
+              console.log(`error finding game`);
+          }
+      });
+  }
+
+  handleBackButton(){
+    this.setState({viewPanel: 'selectGame'})
+  }
+
+
+  render() {
+    var {userName} = this.state;
+    // socket.on('foundOthelloGame', function(response) {
+    //   console.log(response);
+    //   console.log(self)
+    //   self.props.history.push('/othello_duo')
+    //   //"othello2.html?numPlayers=2&id=5b3168c80e70ae1d7fd6a900"
+    //   // window.location = `othello_duo`
+    //   // window.location = `${response.path}`;
+    // });
+
+    socket.on('foundOthelloGame', (response) => {
+      console.log(response);
+      console.log(this)
+      this.props.history.push('/othello_duo')
+      //"othello2.html?numPlayers=2&id=5b3168c80e70ae1d7fd6a900"
+      // window.location = `othello_duo`
+      // window.location = `${response.path}`;
     });
+
 
     let { viewPanel } = this.state;
     let panelDOM = null;
@@ -141,7 +155,7 @@ class HomePage extends Component {
           <form id="user-info-form">
             <div className="form-field">
               <label htmlFor="">Display name</label>
-              <input id="input-name" type="text" name="name" autoFocus={true} />
+              <input id="input-name" type="text" name="name" value={userName} autoFocus={true} />
               <span id="invalid-name-warning">invalid user name</span>
             </div>
             <button
@@ -176,7 +190,7 @@ class HomePage extends Component {
         <div id="center-container">{panelDOM}</div>
           {button}
         <a
-          href="http://www.hannu.se/games/othello/rules.htm"
+          href="https://www.youtube.com/watch?v=Ol3Id7xYsY4"
           id="othello-help"
           target="_blank"
         >

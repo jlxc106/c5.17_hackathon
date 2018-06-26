@@ -144,7 +144,7 @@ io.on('connection', socket => {
       .catch(err => console.log(err));
   });
 
-  socket.on('searchOthello', response => {
+  socket.on('searchOthello', (response, callback) => {
     // console.log(response);
     if (response.userName.trim().length > 0) {
       User.findByToken(response.token).then(doc => {
@@ -216,7 +216,7 @@ io.on('connection', socket => {
         );
       });
     } else {
-      callback();
+      callback('invalid name');
     }
   });
 
