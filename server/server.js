@@ -14,13 +14,24 @@ const { User } = require('./models/user');
 const { Othello } = require('./othello/othello');
 const { OthelloModel } = require('./models/othello_model');
 const publicPath = path.join(__dirname, '../public');
-
+// const publicPath2 = path.join(__dirname, '..')
 const app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
 const port = process.env.PORT || 3000;
 
-app.use(express.static(publicPath));
+
+
+
+// // app.use(express.static("."));
+// app.use(express.static(publicPath2));
+
+// app.get("/", (req, res)=>{
+//   res.sendFile(path.resolve(__dirname, "..", "index.html"));
+// })
+// // app.get();
+
+// app.use(express.static(publicPath));
 var othello = new Othello();
 
 app.use((req, res, next) => {
@@ -133,7 +144,7 @@ io.on('connection', socket => {
       .catch(err => console.log(err));
   });
 
-  socket.on('searchOthello', response => {
+  socket.on('searchOthello', (response, callback) => {
     // console.log(response);
     if (response.userName.trim().length > 0) {
       User.findByToken(response.token).then(doc => {
@@ -148,7 +159,6 @@ io.on('connection', socket => {
               return;
             } else if (othello.addUserToWaitingList(result)) {
               const gameId = new ObjectID().toHexString();
-              // console.log('gameId: ', gameId);
               othello
                 .addUsersToGame(gameId)
                 .then(players => {
@@ -157,11 +167,11 @@ io.on('connection', socket => {
                       socket
                         .to(player.socketId)
                         .emit('foundOthelloGame', {
-                          path: `othello2.html?numPlayers=2&id=${gameId}`
+                          gameId: gameId
                         });
                     } else {
                       socket.emit('foundOthelloGame', {
-                        path: `othello2.html?numPlayers=2&id=${gameId}`
+                        gameId: gameId
                       });
                     }
                   });
@@ -205,7 +215,7 @@ io.on('connection', socket => {
         );
       });
     } else {
-      callback();
+      callback('invalid name');
     }
   });
 
