@@ -1,45 +1,341 @@
 import React, { Component } from 'react';
+import _ from 'lodash';
 import Row from './row';
+import Message from './message';
+import io from 'socket.io-client';
+// import io from 'socket.io-client';
+let socket = io(`http://localhost:3000/`);
 
 class OthelloDuo extends Component {
   constructor(props) {
     super(props);
     this.list = null;
     this.col_list = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    this._isMounted = false;
     this.state = {
-      winner: null,
-      showModal: false,
-      //player1 is black -- player2 is white
-      player1: [[3, 4], [4, 3]],
-      player2: [[3, 3], [4, 4]],
+      gameState:{
+        boardState: [
+          ['0', '0', '0', '0', '0', '0', '0', '0'],
+          ['0', '0', '0', '0', '0', '0', '0', '0'],
+          ['0', '0', '0', '0', '0', '0', '0', '0'],
+          ['0', '0', '0', '0', '0', '0', '0', '0'],
+          ['0', '0', '0', '0', '0', '0', '0', '0'],
+          ['0', '0', '0', '0', '0', '0', '0', '0'],
+          ['0', '0', '0', '0', '0', '0', '0', '0'],
+          ['0', '0', '0', '0', '0', '0', '0', '0']
+        ],
+        legal_moves_array: [],
+        winner: null,
+        players: {
+          sith: {
+            userName: null,
+            userSpots: [[3, 4], [4, 3]]
+  
+          },
+          jedi:{
+            userName: null,
+            userSpots: [[3, 3], [4, 4]]
+          }
+        },
+        role: null, //sith/jedi
+        userColor: null,  //black/white
+        opponentColor: null,
+        isUserTurn: null
+      },
+      chat:{
+        message: '',
+        messageLog: []
+      },
+      token: null,
       userName: null,
-      role: null,
-      userColor: null,
-      opponentColo: null,
-      turn: 'player 1',
-      legal_moves_array: [[2, 3], [3, 2], [4, 5], [5, 4]],
-      boardState: [
-        ['0', '0', '0', '0', '0', '0', '0', '0'],
-        ['0', '0', '0', '0', '0', '0', '0', '0'],
-        ['0', '0', '0', 'a', '0', '0', '0', '0'],
-        ['0', '0', 'a', 'w', 'b', '0', '0', '0'],
-        ['0', '0', '0', 'b', 'w', 'a', '0', '0'],
-        ['0', '0', '0', '0', 'a', '0', '0', '0'],
-        ['0', '0', '0', '0', '0', '0', '0', '0'],
-        ['0', '0', '0', '0', '0', '0', '0', '0']
-      ]
+      gameId: null,
+      winner: null,
+      showModal: false
+      // jediArray: [[3, 3], [4, 4]],
+      // SithArray: [[3, 4], [4, 3]],
+      // role: null, //sith/jedi
+      // userColor: null,  //black/white
+      // opponentColor: null,
+      // isUserTurn: null,
+      // legal_moves_array: [[2, 3], [3, 2], [4, 5], [5, 4]],
+      // boardState: [
+      //   ['0', '0', '0', '0', '0', '0', '0', '0'],
+      //   ['0', '0', '0', '0', '0', '0', '0', '0'],
+      //   ['0', '0', '0', 'a', '0', '0', '0', '0'],
+      //   ['0', '0', 'a', 'w', 'b', '0', '0', '0'],
+      //   ['0', '0', '0', 'b', 'w', 'a', '0', '0'],
+      //   ['0', '0', '0', '0', 'a', '0', '0', '0'],
+      //   ['0', '0', '0', '0', '0', '0', '0', '0'],
+      //   ['0', '0', '0', '0', '0', '0', '0', '0']
+      // ],
+      // message: '',
+      // messageLog: []
     };
+
+    this.debounced_mount = _.debounce(this.handleUserVerification, 200);
+
+    // this.componentDidMount = _.debounce(this.componentDidMount, 300);
+    // this.somefag = _.debounce(this.somefag, 300);
+    // socket.on('connect', ()=>{
+    // this.somefag();
+
+
+    // }, 500)
+
+    // })
 
     this.handleUserTurn = this.handleUserTurn.bind(this);
     this.hideModal = this.hideModal.bind(this);
-    this.handleReset = this.handleReset.bind(this);
+    // this.handleReset = this.handleReset.bind(this);
+    this.handleChatSubmit = this.handleChatSubmit.bind(this);
+    socket.on('sendMessage', (message)=>{
+      this.handleChatReceive('sendMessage', message);
+    })
+    socket.on('serverMessage', (message) =>{
+      this.handleChatReceive('serverMessage', message);
+    })
+
+    socket.on('getMove', (res)=>{
+      console.log('getMove', res);
+      this.handleGetMove(res);
+    })
+
+    socket.on('initOthello', (res)=>{
+      console.log('initOthello', res);
+      this.handleGameInit(res);
+    })
+
+    socket.on('initNewGame', (res)=>{
+      console.log('initNewGame', res);
+    })
+    
+    socket.on('confirmNewGame', (res)=>{
+      console.log('confirmNewGame', res);
+    })
+  }
+
+  handleGameInit(res){
+    var {allowedMoves, boardState, userTurn, users} = res;
+    var jediUserName, sithUserName;
+    users.forEach((user)=>{
+      console.log('user', user);
+      if(user.role === 'white'){
+        jediUserName = user.userName;
+      }else if(user.role === 'black'){
+        sithUserName = user.userName;
+      }
+    })
+
+    // var role;
+    // if(userColor === 'black'){
+    //   opponentColor = '';
+    //   role = 'sith'
+    // }
+    var role, userColor, opponentColor;
+    var isUserTurn = false;
+    if(res.role === 'black'){
+      role = 'sith';
+      userColor = 'black';
+      opponentColor = 'white'
+    }else if(res.role === 'white'){
+      role ='jedi';
+      userColor = 'white';
+      opponentColor = 'black';
+    }
+    // var role = 'sith';
+    // var opponentColor = '';
+    // var userColor = res.role
+    // var isUserTurn = false;
+    // if(userColor === 'black'){
+    //   role = 'jedi';
+    // }
+    // if(userColor === 'black'){
+    //   opponentColor = 'white';
+    // }else if(userColor === 'white'){
+    //   opponentColor = 'black';
+    // }
+    if(userTurn === role){
+      isUserTurn = true;
+    }
+    var newBoardState = [[],[],[],[],[],[],[],[]];
+    var newAllowedMovesArray = [];
+    if(isUserTurn){
+      allowedMoves.forEach((move, index)=>{
+        let {row, col} = move;
+        newAllowedMovesArray.push([row, col]);
+        boardState[row][col] = 'a';
+      })
+    }
+    for(var rowIndex=0; rowIndex< 8; rowIndex++){
+      for(var colIndex=0; colIndex<8; colIndex++){
+        var cellValue = boardState[rowIndex][colIndex];
+        newBoardState[rowIndex].push(cellValue);
+      }
+    }
+    this.setState({
+      gameState:{ 
+        ...this.state.gameState,
+        boardState: newBoardState, 
+        legal_moves_array: newAllowedMovesArray,
+        role: role,
+        userColor,
+        opponentColor,
+        isUserTurn,
+        players:{
+          jedi: {
+            userName: jediUserName,
+            userSpots: this.getUserSpots(newBoardState, 'w')
+          },
+          sith:{
+            userName: sithUserName,
+            userSpots: this.getUserSpots(newBoardState, 'b')
+          }
+        }
+      },
+    }, ()=>{
+      console.log(this.state)
+      console.log(jediUserName);
+      console.log(sithUserName);
+    })
+  }
+
+  getUserSpots(boardState, color){
+    var returnArray = [];
+    for(var rowIndex=0; rowIndex < 8; rowIndex++){
+      for(var colIndex=0; colIndex < 8; colIndex++){
+        if(boardState[rowIndex][colIndex] === color){
+          returnArray.push([rowIndex, colIndex]);
+        }
+      }
+    }
+    return returnArray;
+  }
+
+
+  handleChatReceive(type, message){
+    console.log(this._isMounted);
+    if(type=== 'sendMessage'){
+      console.log('sendMessage', message);
+      if(this._isMounted){
+        this.setState({chat: {...this.state.chat, messageLog: [...this.state.chat.messageLog , [type, message]]}}, ()=>{
+          console.log(this.state);
+        })
+      }
+    }else if (type === "serverMessage"){
+      console.log('serverMessage', message);
+      if(this._isMounted){
+        this.setState({chat:{...this.state.chat, messageLog: [...this.state.chat.messageLog , [type, message]]}}, ()=>{
+          console.log(this.state);
+        })
+      }
+    }
+  }
+
+  handleInitSocket(){
+      const token = this.state.token || window.localStorage.getItem('token') || undefined;
+      const gameId = this.state.gameId || window.localStorage.getItem('gameId') || undefined;
+      if(token == 'undefined' || !token  || !gameId || gameId == 'undefined'){
+        this.props.history.push('/')
+        return;
+      }
+        console.log('validateuser');
+        socket.emit('validateUser', {token, gameId}, (err, response)=>{
+          console.log(response);
+          console.log(err);
+          if(err && response.id){
+            window.localStorage.setItem('token', response.id);
+            this.props.history.push('/')
+          }else{
+            console.log('emit join')
+            socket.emit('join', {token, gameId}, ()=>{
+              console.log('oink');
+            });
+          }
+      })
+  }
+
+  handleUserVerification(){
+    const token = window.localStorage.getItem('token');
+    const userName = window.localStorage.getItem('userName');
+    const gameId = window.localStorage.getItem('gameId');
+    console.log('oink');
+    this.setState({
+      token, userName, gameId
+    }, ()=> {
+      if(token =='undefined' || !token || !gameId || gameId == 'undefined'){
+        this.props.history.push('/');
+        return;
+      }
+      console.log('validateUser');
+      socket.emit('validateUser', {token, gameId}, (err, response) =>{
+        console.log(err);
+        console.log(response);
+        if(err && response.id){
+          window.localStorage.setItem('token', response.id);
+          this.props.history.push('/')
+        }else{
+          if(!window.localStorage.getItem('userName')){
+            window.localStorage.setItem('userName', response.userName);
+          }
+          console.log('emit join')
+          socket.emit('join', {token, gameId});
+        }
+      })
+    });
+  }
+
+componentDidMount(){
+  console.log('mounting');
+  this._isMounted = true;
+  this.debounced_mount();
+}
+
+  // componentDidMount(){
+  //   console.log(this._isMounted);
+  //   this._isMounted = true;
+  //   setTimeout(()=>{
+  //     if(!this._isMounted){
+  //       return;
+  //     }
+  //     console.log('--------------------component mounted here-------------------')
+  //     const token = window.localStorage.getItem('token');
+  //     const userName = window.localStorage.getItem('userName');
+  //     const gameId = window.localStorage.getItem('gameId');
+  //     this.setState(
+  //       {
+  //         token,
+  //         userName,
+  //         gameId
+  //       },
+  //       () => this.handleInitSocket()
+  //     );
+  //   },300)
+  //   // console.log('--------------------component mounted here-------------------')
+  //   // const token = window.localStorage.getItem('token');
+  //   // const userName = window.localStorage.getItem('userName');
+  //   // const gameId = window.localStorage.getItem('gameId');
+  //   // this.setState(
+  //   //   {
+  //   //     token,
+  //   //     userName,
+  //   //     gameId
+  //   //   },
+  //   //   () => this.handleInitSocket()
+  //   // );
+  //   // this.handleInitSocket();
+  // }
+
+  componentWillUnmount(){
+    console.log('unmounting');
+    this._isMounted = false;
+    this.debounced_mount.cancel();
   }
 
   alternateTurn() {
-    if (this.state.turn === 'player 1') {
-      return 'player 2';
+    if (this.state.gameState.isUserTurn) {
+      return false;
     }
-    return 'player 1';
+    return true;
   }
 
   audioCallback() {
@@ -95,7 +391,7 @@ class OthelloDuo extends Component {
       let temp_row = row + dRow;
       let temp_column = column + dColumn;
       if (this.withinBounds(temp_row, temp_column)) {
-        var cellTracker = this.state.boardState[temp_row][temp_column];
+        var cellTracker = this.state.gameState.boardState[temp_row][temp_column];
         if (cellTracker === color_to_replace) {
           temp_directions = [
             [-1, -1],
@@ -121,7 +417,7 @@ class OthelloDuo extends Component {
             if (!this.withinBounds(temp_dRow, temp_dColumn)) {
               break;
             }
-            cellTracker = this.state.boardState[temp_dRow][temp_dColumn];
+            cellTracker = this.state.gameState.boardState[temp_dRow][temp_dColumn];
             if (cellTracker === color) {
               arrayOfFlips = arrayOfFlips.concat(path);
               break;
@@ -202,96 +498,101 @@ class OthelloDuo extends Component {
     return returnBoard;
   }
 
-  searchSpots(row, column, color_to_replace, color, board) {
-    const diag = [
-      [0, 1],
-      [0, -1],
-      [-1, 0],
-      [1, 0],
-      [-1, -1],
-      [1, -1],
-      [-1, 1],
-      [1, 1]
-    ];
-    let temp_diag_directions = [
-      [0, 1],
-      [0, -1],
-      [-1, 0],
-      [1, 0],
-      [-1, -1],
-      [1, -1],
-      [-1, 1],
-      [1, 1]
-    ];
-    for (var i = 0; i < diag.length; i++) {
-      var var1 = diag[i][0];
-      var var2 = diag[i][1];
-      var var3 = diag[i][0] + row;
-      var var4 = diag[i][1] + column;
-      if (this.withinBounds(var3, var4)) {
-        var checkCell = board[var3][var4];
-        if (checkCell === color_to_replace) {
-          temp_diag_directions = [
-            [0, 1],
-            [0, -1],
-            [-1, 0],
-            [1, 0],
-            [-1, -1],
-            [1, -1],
-            [-1, 1],
-            [1, 1]
-          ];
-          while (checkCell === color_to_replace) {
-            temp_diag_directions[i][0] = temp_diag_directions[i][0] + var1;
-            temp_diag_directions[i][1] = temp_diag_directions[i][1] + var2;
-            var tempr = row + temp_diag_directions[i][0];
-            var tempc = column + temp_diag_directions[i][1];
-            if (!this.withinBounds(tempr, tempc)) {
-              break;
-            }
-            checkCell = board[tempr][tempc];
-            if (checkCell === color) {
-              board[row][column] = 'a';
-            }
-          }
-        }
-      }
-    }
-    return board;
-  }
+  // searchSpots(row, column, color_to_replace, color, board) {
+  //   const diag = [
+  //     [0, 1],
+  //     [0, -1],
+  //     [-1, 0],
+  //     [1, 0],
+  //     [-1, -1],
+  //     [1, -1],
+  //     [-1, 1],
+  //     [1, 1]
+  //   ];
+  //   let temp_diag_directions = [
+  //     [0, 1],
+  //     [0, -1],
+  //     [-1, 0],
+  //     [1, 0],
+  //     [-1, -1],
+  //     [1, -1],
+  //     [-1, 1],
+  //     [1, 1]
+  //   ];
+  //   for (var i = 0; i < diag.length; i++) {
+  //     var var1 = diag[i][0];
+  //     var var2 = diag[i][1];
+  //     var var3 = diag[i][0] + row;
+  //     var var4 = diag[i][1] + column;
+  //     if (this.withinBounds(var3, var4)) {
+  //       var checkCell = board[var3][var4];
+  //       if (checkCell === color_to_replace) {
+  //         temp_diag_directions = [
+  //           [0, 1],
+  //           [0, -1],
+  //           [-1, 0],
+  //           [1, 0],
+  //           [-1, -1],
+  //           [1, -1],
+  //           [-1, 1],
+  //           [1, 1]
+  //         ];
+  //         while (checkCell === color_to_replace) {
+  //           temp_diag_directions[i][0] = temp_diag_directions[i][0] + var1;
+  //           temp_diag_directions[i][1] = temp_diag_directions[i][1] + var2;
+  //           var tempr = row + temp_diag_directions[i][0];
+  //           var tempc = column + temp_diag_directions[i][1];
+  //           if (!this.withinBounds(tempr, tempc)) {
+  //             break;
+  //           }
+  //           checkCell = board[tempr][tempc];
+  //           if (checkCell === color) {
+  //             board[row][column] = 'a';
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return board;
+  // }
 
-  findPlayerCells(color, board) {
-    let playerList = [];
-    for (var rowIndex = 0; rowIndex < 8; rowIndex++) {
-      for (var colIndex = 0; colIndex < 8; colIndex++) {
-        if (board[rowIndex][colIndex] === color) {
-          playerList.push([rowIndex, colIndex]);
-        }
-      }
-    }
-    return playerList;
-  }
+  // findPlayerCells(color, board) {
+  //   let playerList = [];
+  //   for (var rowIndex = 0; rowIndex < 8; rowIndex++) {
+  //     for (var colIndex = 0; colIndex < 8; colIndex++) {
+  //       if (board[rowIndex][colIndex] === color) {
+  //         playerList.push([rowIndex, colIndex]);
+  //       }
+  //     }
+  //   }
+  //   return playerList;
+  // }
 
   handleReset() {
-    this.setState({
-      winner: null,
-      showModal: false,
-      //player1 is black -- player2 is white
-      player1: [[3, 4], [4, 3]],
-      player2: [[3, 3], [4, 4]],
-      turn: 'player 1',
-      legal_moves_array: [[2, 3], [3, 2], [4, 5], [5, 4]],
-      boardState: [
-        ['0', '0', '0', '0', '0', '0', '0', '0'],
-        ['0', '0', '0', '0', '0', '0', '0', '0'],
-        ['0', '0', '0', 'a', '0', '0', '0', '0'],
-        ['0', '0', 'a', 'w', 'b', '0', '0', '0'],
-        ['0', '0', '0', 'b', 'w', 'a', '0', '0'],
-        ['0', '0', '0', '0', 'a', '0', '0', '0'],
-        ['0', '0', '0', '0', '0', '0', '0', '0'],
-        ['0', '0', '0', '0', '0', '0', '0', '0']
-      ]
+    socket.emit('requestNewGame', {
+      token: this.state.token,
+      role: this.state.role,
+      gameId: this.state.gameId
     });
+    // this.setState({
+    //   winner: null,
+    //   showModal: false,
+    //   //player1 is black -- player2 is white
+    //   player1: [[3, 4], [4, 3]],
+    //   player2: [[3, 3], [4, 4]],
+    //   turn: 'player 1',
+    //   legal_moves_array: [[2, 3], [3, 2], [4, 5], [5, 4]],
+    //   boardState: [
+    //     ['0', '0', '0', '0', '0', '0', '0', '0'],
+    //     ['0', '0', '0', '0', '0', '0', '0', '0'],
+    //     ['0', '0', '0', 'a', '0', '0', '0', '0'],
+    //     ['0', '0', 'a', 'w', 'b', '0', '0', '0'],
+    //     ['0', '0', '0', 'b', 'w', 'a', '0', '0'],
+    //     ['0', '0', '0', '0', 'a', '0', '0', '0'],
+    //     ['0', '0', '0', '0', '0', '0', '0', '0'],
+    //     ['0', '0', '0', '0', '0', '0', '0', '0']
+    //   ]
+    // });
   }
 
   hideModal() {
@@ -300,92 +601,225 @@ class OthelloDuo extends Component {
     });
   }
 
-  handleGameOver() {
-    let winner = null;
-    let player1_score = this.state.player1.length;
-    let player2_score = this.state.player2.length;
-    if (player1_score > player2_score) {
-      winner = 'player 1';
-    } else if (player2_score > player1_score) {
-      winner = 'player 2';
-    } else {
-      winner = 'tie';
-      console.log('handle a tie scenario result');
+  handleChatInput(event){
+    // console.log('event ',event);
+    // if(event.keyCode === 13 || event.keyCode === 10){
+
+    // }
+    // event.preventDefault();
+    let message = event.target.value;
+    this.setState({chat:{...this.state.chat, message}})
+  }
+
+  handleChatSubmit(event) {
+    event.preventDefault();
+    var {token, gameId} = this.state;
+    var message = this.state.chat.message;
+    if(!message || message.length === 0){
+      return;
     }
-    this.setState({
-      winner,
-      showModal: true
+    console.log('chat submit pressed');
+    socket.emit('newMessage', {
+      token,
+      gameId,
+      message
+    }, (err)=>{
+      if(err){
+        console.log(err);
+      }
+      else{
+        this.setState({chat:{...this.state.chat, message: ''}});
+      }
     });
   }
 
-  handleUserTurn(row, column) {
-    // console.log(`called handleUserTurn from ${row} and ${column}`);
-    if (this.state.boardState[row][column] !== 'a') {
-      return;
-      // console.log('allowed move clicked')
+  // handleGameOver() {
+  //   let winner = null;
+  //   let player1_score = this.state.player1.length;
+  //   let player2_score = this.state.player2.length;
+  //   if (player1_score > player2_score) {
+  //     winner = 'player 1';
+  //   } else if (player2_score > player1_score) {
+  //     winner = 'player 2';
+  //   } else {
+  //     winner = 'tie';
+  //     console.log('handle a tie scenario result');
+  //   }
+  //   this.setState({
+  //     winner,
+  //     showModal: true
+  //   });
+  // }
+
+  handleGetMove(res){
+    var isUserTurn = this.setUserTurn(res.userTurn);
+    var newBoardState;
+    if(isUserTurn){
+      newBoardState = this.importBoard(res.boardState);
+    }else{
+      newBoardState = this.importBoard(res.boardState);
     }
-    var copyOfBoard = this.state.boardState.slice();
-    // console.log(copyOfBoard);
-    if (this.state.turn === 'player 1') {
-      copyOfBoard[row][column] = 'b';
-      copyOfBoard = this.flip(row, column, 'b', 'w', copyOfBoard);
-      copyOfBoard = this.legalMoves(copyOfBoard, 'w');
-      this.setState(
-        {
-          player1: this.findPlayerCells('b', copyOfBoard),
-          player2: this.findPlayerCells('w', copyOfBoard),
-          turn: this.alternateTurn(),
-          legal_moves_array: this.findPlayerCells('a', copyOfBoard),
-          boardState: copyOfBoard
-        },
-        () => {
-          if (this.state.player1.length + this.state.player2.length === 64) {
-            // console.log('game over');
-            this.handleGameOver();
-          }
-          // console.log(this.state);
-          if (this.state.legal_moves_array.length === 0) {
-            // console.log('---alternate turn------', this.state)
-            copyOfBoard = this.legalMoves(copyOfBoard, 'b');
-            this.setState({
-              turn: this.alternateTurn(),
-              legal_moves_array: this.findPlayerCells('a', copyOfBoard),
-              boardState: copyOfBoard
-            });
-          }
-        }
-      );
-    } else {
-      copyOfBoard[row][column] = 'w';
-      copyOfBoard = this.flip(row, column, 'w', 'b', copyOfBoard);
-      copyOfBoard = this.legalMoves(copyOfBoard, 'b');
-      this.setState(
-        {
-          player1: this.findPlayerCells('b', copyOfBoard),
-          player2: this.findPlayerCells('w', copyOfBoard),
-          turn: this.alternateTurn(),
-          legal_moves_array: this.findPlayerCells('a', copyOfBoard),
-          boardState: copyOfBoard
-        },
-        () => {
-          if (this.state.player1.length + this.state.player2.length === 64) {
-            // console.log('game over');
-            this.handleGameOver();
-          }
-          // console.log(this.state);
-          if (this.state.legal_moves_array.length === 0) {
-            // console.log('---alternate turn------', this.state)
-            copyOfBoard = this.legalMoves(copyOfBoard, 'w');
-            this.setState({
-              turn: this.alternateTurn(),
-              legal_moves_array: this.findPlayerCells('a', copyOfBoard),
-              boardState: copyOfBoard
-            });
-          }
-        }
-      );
-    }
+    this.setState({
+      gameState:{
+        ...this.state.gameState,
+        boardState: newBoardState.boardState,
+        legal_moves_array: newBoardState.legal_moves_array,
+        isUserTurn
+      }
+    })
+
+    // (err, res) =>{
+    //   // console.log(err);
+    //   console.log(res);
+    //   if(err){
+    //     console.log(err);
+    //     return;
+    //   }
+    //   var isUserTurn = this.setUserTurn(res.userTurn);
+    //   var newBoardState;
+    //   if(isUserTurn){
+    //     newBoardState = this.importBoard(res.boardState, res.allowedMoves);
+    //   }
+    //   else{
+    //     newBoardState = this.importBoard(res.boardState);
+    //   }
+    //   this.setState({
+    //     gameState:{
+    //       ...this.state.gameState,
+    //       boardState: newBoardState.boardState,
+    //       legal_moves_array: newBoardState.legal_moves_array,
+    //       isUserTurn
+    //     }
+    //   })
+    // }
   }
+
+
+  handleUserTurn(row, column){
+    console.log('inside handleuserturn');
+    if(this.state.gameState.boardState[row][column] !== 'a'){
+      console.log('invalid move')
+      return;
+    }
+    console.log('valid move');
+    socket.emit("setMove", {
+      token: this.state.token,
+      gameId: this.state.gameId,
+      role: this.state.gameState.userColor,
+      position: {row: row, col: column}
+    }, (err, res) =>{
+      // console.log(err);
+      console.log(res);
+      if(err){
+        console.log(err);
+        return;
+      }
+      var isUserTurn = this.setUserTurn(res.userTurn);
+      var newBoardState;
+      if(isUserTurn){
+        newBoardState = this.importBoard(res.boardState, res.allowedMoves);
+      }
+      else{
+        newBoardState = this.importBoard(res.boardState);
+      }
+      this.setState({
+        gameState:{
+          ...this.state.gameState,
+          boardState: newBoardState.boardState,
+          legal_moves_array: newBoardState.legal_moves_array,
+          isUserTurn
+        }
+      })
+    })
+  }
+
+  importBoard(boardState, allowedMoves){
+    var returnObj = {boardState: [[],[],[],[],[],[],[],[]], legal_moves_array: []}
+    for(var rowIndex=0; rowIndex < 8; rowIndex++){
+      for(var colIndex=0; colIndex < 8; colIndex++){
+        returnObj.boardState[rowIndex].push(boardState[rowIndex][colIndex])
+      }
+    }
+    if(!allowedMoves || allowdMoves.length === 0){
+      return returnObj;
+    }
+    for(var allowedIndex=0; allowedIndex < allowedMoves.length; allowedIndex++){
+      var {row, col} = allowedMoves[allowedIndex];
+      returnObj.boardState[row][col] = 'a';
+      returnObj.legal_moves_array.push([row, col])
+    }
+    return returnObj;
+  }
+
+
+  // handleUserTurn(row, column) {
+  //   // console.log(`called handleUserTurn from ${row} and ${column}`);
+  //   if (this.state.boardState[row][column] !== 'a') {
+  //     return;
+  //     // console.log('allowed move clicked')
+  //   }
+  //   var copyOfBoard = this.state.boardState.slice();
+  //   // console.log(copyOfBoard);
+  //   if (this.state.turn === 'player 1') {
+  //     copyOfBoard[row][column] = 'b';
+  //     copyOfBoard = this.flip(row, column, 'b', 'w', copyOfBoard);
+  //     copyOfBoard = this.legalMoves(copyOfBoard, 'w');
+  //     this.setState(
+  //       {
+  //         player1: this.findPlayerCells('b', copyOfBoard),
+  //         player2: this.findPlayerCells('w', copyOfBoard),
+  //         turn: this.alternateTurn(),
+  //         legal_moves_array: this.findPlayerCells('a', copyOfBoard),
+  //         boardState: copyOfBoard
+  //       },
+  //       () => {
+  //         if (this.state.player1.length + this.state.player2.length === 64) {
+  //           // console.log('game over');
+  //           this.handleGameOver();
+  //         }
+  //         // console.log(this.state);
+  //         if (this.state.legal_moves_array.length === 0) {
+  //           // console.log('---alternate turn------', this.state)
+  //           copyOfBoard = this.legalMoves(copyOfBoard, 'b');
+  //           this.setState({
+  //             turn: this.alternateTurn(),
+  //             legal_moves_array: this.findPlayerCells('a', copyOfBoard),
+  //             boardState: copyOfBoard
+  //           });
+  //         }
+  //       }
+  //     );
+  //   } else {
+  //     copyOfBoard[row][column] = 'w';
+  //     copyOfBoard = this.flip(row, column, 'w', 'b', copyOfBoard);
+  //     copyOfBoard = this.legalMoves(copyOfBoard, 'b');
+  //     this.setState(
+  //       {
+  //         player1: this.findPlayerCells('b', copyOfBoard),
+  //         player2: this.findPlayerCells('w', copyOfBoard),
+  //         turn: this.alternateTurn(),
+  //         legal_moves_array: this.findPlayerCells('a', copyOfBoard),
+  //         boardState: copyOfBoard
+  //       },
+  //       () => {
+  //         if (this.state.player1.length + this.state.player2.length === 64) {
+  //           // console.log('game over');
+  //           this.handleGameOver();
+  //         }
+  //         // console.log(this.state);
+  //         if (this.state.legal_moves_array.length === 0) {
+  //           // console.log('---alternate turn------', this.state)
+  //           copyOfBoard = this.legalMoves(copyOfBoard, 'w');
+  //           this.setState({
+  //             turn: this.alternateTurn(),
+  //             legal_moves_array: this.findPlayerCells('a', copyOfBoard),
+  //             boardState: copyOfBoard
+  //           });
+  //         }
+  //       }
+  //     );
+  //   }
+  // }
 
   render() {
     let displayJediWin = '',
@@ -399,13 +833,14 @@ class OthelloDuo extends Component {
     }
     let jedi_opacity = 'opacity_1';
     let sith_opacity = 'opacity_1';
-    if (this.state.turn === 'player 1') {
+    if(this.state.gameState.role === 'sith' && this.state.gameState.isUserTurn || this.state.gameState.role === 'jedi' && !this.state.gameState.isUserTurn){
+    // if (this.state.turn === 'player 1') {
       jedi_opacity = 'opacity_05';
     } else {
       sith_opacity = 'opacity_05';
     }
 
-    const row = this.state.boardState.map((rowItem, key) => {
+    const row = this.state.gameState.boardState.map((rowItem, key) => {
       return (
         <Row
           key={key}
@@ -416,8 +851,13 @@ class OthelloDuo extends Component {
       );
     });
 
+     var message_li = this.state.chat.messageLog.map((message, index)=>{
+      return <Message key={index} message={message[1]} type={message[0]}/>
+    })
+
+
     return (
-      <div>
+      <div className="forest_background">
         <div className="col-xs-9 othello">
           <audio
             id="sw_audio"
@@ -432,37 +872,48 @@ class OthelloDuo extends Component {
             <div id="back-board">{row}</div>
             <div>
               <div
-                className={"stats_container col-xs-offset-2 col-xs-2 " + jedi_opacity}
+                className={
+                  'stats_container col-xs-offset-2 col-xs-2 ' + jedi_opacity
+                }
                 id="jedi-stats"
               >
                 <div className="player-info" id="jedi-info">
                   <p className="jedi-name">
                     Jedi
-                    <span />
+                    <span>{this.state.gameState.players.jedi.userName || '' }</span>
                   </p>
-                  <p className="jedi-score">{this.state.player2.length}</p>
+                  <p className="jedi-score">{this.state.gameState.players.jedi.userSpots.length}</p>
                 </div>
               </div>
               <div className="col-xs-offset-1 col-xs-2" id="reset-button">
-                <button type="button" className="button reset" onClick={this.handleReset}>
+                <button
+                  type="button"
+                  className="button reset"
+                  onClick={this.handleReset}
+                >
                   RESET
                 </button>
               </div>
               <div
-                className={"stats_container col-xs-offset-1 col-xs-2 " + sith_opacity}
+                className={
+                  'stats_container col-xs-offset-1 col-xs-2 ' + sith_opacity
+                }
                 id="sith-stats"
               >
                 <div className="player-info" id="sith-info">
                   <p className="sith-name">
                     Sith
-                    <span />
+                    <span>{this.state.gameState.players.sith.userName || '' }</span>
                   </p>
-                  <p className="sith-score">{this.state.player1.length}</p>
+                  <p className="sith-score">{this.state.gameState.players.sith.userSpots.length}</p>
                 </div>
               </div>
             </div>
             <div>
-              <button className="button btn btn-light audio-btn" onClick={this.audioCallback}>
+              <button
+                className="button btn btn-light audio-btn"
+                onClick={this.audioCallback}
+              >
                 <span id="volume-on-icon">
                   <i className="fas fa-volume-up" />
                 </span>
@@ -472,10 +923,18 @@ class OthelloDuo extends Component {
               </button>
             </div>
           </div>
-          <div id="contain-sith-gif" className={"modal " + displaySithWin} onClick={this.hideModal}>
+          <div
+            id="contain-sith-gif"
+            className={'modal ' + displaySithWin}
+            onClick={this.hideModal}
+          >
             <div className="sith-win-gif" />
           </div>
-          <div id="contain-jedi-gif" className={"modal " + displayJediWin} onClick={this.hideModal}>
+          <div
+            id="contain-jedi-gif"
+            className={'modal ' + displayJediWin}
+            onClick={this.hideModal}
+          >
             <div className="jedi-win-gif" />
           </div>
         </div>
@@ -484,9 +943,11 @@ class OthelloDuo extends Component {
             <p>Chat Lobby</p>
           </div>
           <div className="chat-div">
-            <ul id="messages" className="chat__messages" />
+            <ul id="messages" className="chat__messages" >
+                {message_li}
+            </ul>
             <div className="chat__footer">
-              <form id="message-form">
+              <form id="message-form" onSubmit={event => this.handleChatSubmit(event)}>
                 <div id="contain-chat-input">
                   <input
                     name="message"
@@ -494,11 +955,18 @@ class OthelloDuo extends Component {
                     className="form-input"
                     id="input_message"
                     placeholder="send message"
+                    value={this.state.chat.message}
                     autoFocus
                     autoComplete="off"
+                    onChange = {event => this.handleChatInput(event)}
                   />
                 </div>
-                <button className="btn btn-success" id="send_button" onClick={this.handleChatSubmit}>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  id="send_button"
+                  onClick={event => this.handleChatSubmit(event)}
+                >
                   <i className="fas fa-paper-plane" id="send-icon" />
                   <span id="send-text">send</span>
                 </button>

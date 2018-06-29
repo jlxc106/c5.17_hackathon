@@ -149,10 +149,17 @@ body{
     height: 100vh;
     overflow: hidden;
     margin: 0 auto;
+}
+
+.forest_background{
     background-image: url(public/css/images/forestbackground.jpg);
     background-size: cover;
     background-repeat: no-repeat;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0 auto;
 }
+
 .game-title,
 .game-subtitle{
     font-family: badFont;

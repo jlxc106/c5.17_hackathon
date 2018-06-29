@@ -4,6 +4,7 @@ const path = require('path');
 const socketIO = require('socket.io');
 const http = require('http');
 var fs = require('fs');
+const _ = require('lodash');
 // const moment = require('moment');
 const { ObjectID } = require('mongodb');
 // var memwatch = require('memwatch-next');
@@ -14,7 +15,7 @@ const { User } = require('./models/user');
 const { Othello } = require('./othello/othello');
 const { OthelloModel } = require('./models/othello_model');
 const publicPath = path.join(__dirname, '../public');
-// const publicPath2 = path.join(__dirname, '..')
+const publicPath2 = path.join(__dirname, '..')
 const app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
@@ -22,14 +23,12 @@ const port = process.env.PORT || 3000;
 
 
 
-
-// // app.use(express.static("."));
+//production
 // app.use(express.static(publicPath2));
 
-// app.get("/", (req, res)=>{
+// app.get("/*", (req, res)=>{
 //   res.sendFile(path.resolve(__dirname, "..", "index.html"));
 // })
-// // app.get();
 
 // app.use(express.static(publicPath));
 var othello = new Othello();
@@ -47,7 +46,7 @@ app.use((req, res, next) => {
 
 io.on('connection', socket => {
   socket.on('validateUser', (response, callback) => {
-    if (!response.token || response.token === "undefined") {
+    if (!response.token || response.token == "undefined") {
       console.log('no token. creating new user');
       var user = new User({
         _id: new ObjectID(),
@@ -194,14 +193,14 @@ io.on('connection', socket => {
                     },
                     gameState: {
                       boardState: [
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
-                        {0: '0', 1:'0', 2:'0', 3:'w', 4:'b', 5:'0', 6:'0', 7:'0', },
-                        {0: '0', 1:'0', 2:'0', 3:'b', 4:'w', 5:'0', 6:'0', 7:'0', },
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0', },
+                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
+                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
+                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
+                        {0: '0', 1:'0', 2:'0', 3:'w', 4:'b', 5:'0', 6:'0', 7:'0'},
+                        {0: '0', 1:'0', 2:'0', 3:'b', 4:'w', 5:'0', 6:'0', 7:'0'},
+                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
+                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
+                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
                       ],
                       allowedMoves: [{'row': 2, 'col': 3}, {'row': 3, 'col': 2}, {'row': 4, 'col': 5}, {'row': 5, 'col': 4}]
                       // [2,3], [3,2], [4,5], [5,4]

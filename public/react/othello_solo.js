@@ -413,7 +413,7 @@ class OthelloSolo extends Component {
     });
 
     return (
-      <div className="col-xs-12 othello">
+      <div className="col-xs-12 othello forest_background">
         <audio
           id="sw_audio"
           className="audio_class"

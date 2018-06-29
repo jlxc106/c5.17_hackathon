@@ -33,6 +33,15 @@ class HomePage extends Component {
       });
     });
 
+    socket.on('foundOthelloGame', response => {
+      console.log(response);
+      var gameId = response.gameId;
+      if(gameId !== window.localStorage.getItem('gameId')){
+        window.localStorage.setItem('gameId', gameId);
+      }
+      this.props.history.push('/othello_duo');
+    });
+
     this.handleOnSubmit = this.handleOnSubmit.bind(this);
   }
 
@@ -79,6 +88,9 @@ class HomePage extends Component {
         if (err) {
           console.log(`error finding game`);
         }
+        else{
+          window.localStorage.setItem('userName', userName);
+        }
       }
     );
   }
@@ -95,13 +107,6 @@ class HomePage extends Component {
     if(showInvalidNameText){
       invalidNameText = 'showWarningText';
     }
-
-    socket.on('foundOthelloGame', response => {
-      console.log(response);
-      var gameId = response.gameId;
-      window.localStorage.setItem('gameId', gameId);
-      this.props.history.push('/othello_duo');
-    });
 
     let { viewPanel } = this.state;
     let panelDOM = null;
@@ -155,7 +160,6 @@ class HomePage extends Component {
               name="numPlayers"
               value="2"
               type="button"
-              disabled
               onClick={() => this.changeView('collectUserInfo')}
             >
               Two Player
