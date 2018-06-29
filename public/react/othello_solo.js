@@ -384,7 +384,7 @@ class OthelloSolo extends Component {
   }
 
   render() {
-    let displayJediWin = '', displaySithWin = '';
+    // let displayJediWin = '', displaySithWin = '';
     if(this.state.showModal){
       if(this.state.winner === 'player 1'){
         displaySithWin = 'showModal';
@@ -393,6 +393,20 @@ class OthelloSolo extends Component {
         displayJediWin = 'showModal';
       }
     }
+
+
+    var gameOverModal = null;
+    if(this.state.winner === 'player 2' && this.state.showModal){
+      gameOverModal =  <div id="contain-jedi-gif" className='modal' onClick={this.hideModal}>
+        <div className="jedi-win-gif" />
+      </div>    
+    }else if(this.state.winner === 'player 1' && this.state.showModal){
+      gameOverModal =  <div id="contain-sith-gif" className='modal' onClick={this.hideModal}>
+        <div className="sith-win-gif" />
+      </div>
+    }
+
+
     let jedi_opacity = 'opacity_1';
     let sith_opacity = 'opacity_1';
     if (this.state.turn === 'player 1') {
@@ -476,20 +490,7 @@ class OthelloSolo extends Component {
             </button>
           </div>
         </div>
-        <div
-          id='contain-sith-gif'
-          className={'modal ' + displaySithWin}
-          onClick={this.hideModal}
-        >
-          <div className="sith-win-gif" />
-        </div>
-        <div
-          id='contain-jedi-gif'
-          className={'modal ' + displayJediWin}
-          onClick={this.hideModal}
-        >
-          <div className="jedi-win-gif" />
-        </div>
+        {gameOverModal}
       </div>
     );
   }
