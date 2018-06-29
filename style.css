@@ -205,7 +205,6 @@ body{
     text-align: center;
 }
 .stats_container{
-    height: 200px;
     position: relative;
     display: inline-block;
     border-radius: 10px;
@@ -217,11 +216,15 @@ body{
     font-size: 20px;
     font-weight: bold;
 }
+.player-info span{
+    display: block;
+}
+
 .jedi-name,
 .sith-name{
     font-family: starwarsmain;
     margin: 30px 0 10px;
-    font-size: 40px;
+    font-size: 30px;
     text-shadow:
             3px 3px white,
             -3px 3px white,
@@ -234,7 +237,7 @@ body{
     margin: 0 0 20px;
     color: darkred;
     font-family: coolFont;
-    font-size: 40px;
+    font-size: 35px;
     text-shadow:
             2px 2px white,
             -2px 2px white,
@@ -293,7 +296,7 @@ body{
     background-size: cover;
 }
 .modal {
-    display: none;
+    display: block;
     position: fixed;
     z-index: 1;
     padding-top: 100px;
@@ -431,10 +434,6 @@ body{
 .chat-new-game{
     float: right;
     
-}
-
-.showModal{
-    display:block;
 }
 
 .hideWarningText{

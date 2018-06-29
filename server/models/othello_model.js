@@ -76,9 +76,8 @@ var OthelloSchema = new mongoose.Schema({
       required: true,
       default: 'sith'
     },
-    boardState: mongoose.Schema.Types.Mixed,
-
-    // boardState: [{0:String, 1:String,2:String,3:String,4:String,5:String,6:String,7:String}],
+    // boardState: mongoose.Schema.Types.Mixed,
+    boardState: [{0:String, 1:String,2:String,3:String,4:String,5:String,6:String,7:String}],
     allowedMoves: mongoose.Schema.Types.Mixed,
     winner:{
         userName: {
@@ -183,6 +182,7 @@ OthelloSchema.methods.validateMove = function(role, coordinates){
     var moveIsValid = _.findIndex(othelloGame.gameState.allowedMoves, (move)=>{
         return move['row'] === coord_row && move['col'] === coord_col 
     })
+    console.log('moveisvalid', moveIsValid);
     // console.log('105 ', moveIsValid);
     if(moveIsValid !== -1){
         if(role === "black"){
@@ -205,6 +205,8 @@ OthelloSchema.methods.validateMove = function(role, coordinates){
             var column = flipCoord[1];
             copyBoardState[row][column] = userPiece;
         })
+        console.log('3', copyBoardState[3]);
+        console.log('4', copyBoardState[4])
         othelloGame.gameState.boardState = copyBoardState;
         //evaluate the boardstate for end of game scenario
         if(isGameOver(othelloGame.gameState.boardState)){
@@ -234,6 +236,7 @@ OthelloSchema.methods.validateMove = function(role, coordinates){
           }
         }
         othelloGame.save().then(()=>{
+          console.log('saved')
           return othelloGame;
             // console.log('updated othelloGame:', othelloGame);
         });

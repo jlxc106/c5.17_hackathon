@@ -46,6 +46,7 @@ app.use((req, res, next) => {
 
 io.on('connection', socket => {
   socket.on('validateUser', (response, callback) => {
+    console.log('49 validateUser', response);
     if (!response.token || response.token == "undefined") {
       console.log('no token. creating new user');
       var user = new User({
@@ -62,8 +63,10 @@ io.on('connection', socket => {
         err => console.log('error: ', err)
       );
     } else {
+      console.log('the usual find that ho');
       User.findByToken(response.token)
         .then(userDoc => {
+          console.log('69', userDoc)
           if (!userDoc) {
             console.log('tainted token. creating new user');
             var user = new User({
@@ -80,6 +83,7 @@ io.on('connection', socket => {
               err => console.log('error: ', err)
             );
           }else{
+            console.log('86 update that user mang',)
             User.findByIdAndUpdate(
                 { _id: userDoc._id },
                 { socketId: socket.id },
@@ -110,7 +114,7 @@ io.on('connection', socket => {
               );
           }
         })
-        .catch(err => console.log(err));
+        .catch(err => console.log('113' ,err));
     }
   });
 
@@ -219,15 +223,18 @@ io.on('connection', socket => {
   });
 
   socket.on('setMove', (res, callback) => {
+    console.log('222', res);
       // console.log('201 ', res);
     OthelloModel.findById(res.gameId).then(othelloGame => {
-        // console.log('203 ', othelloGame);
+        console.log('225 ', othelloGame);
         if((othelloGame.gameState.userTurn ==='sith' && res.role === 'black') || (othelloGame.gameState.userTurn ==='jedi' && res.role === 'white')){
           othelloGame.validateMove(res.role, res.position);
           return othelloGame;
         }
+        console.log('invalid turn');
         throw new Error('not user turn')
     }).then(othelloGame =>{
+      console.log(233, othelloGame);
       var resObj = {
         allowedMoves: othelloGame.gameState.allowedMoves,
         boardState: othelloGame.gameState.boardState,

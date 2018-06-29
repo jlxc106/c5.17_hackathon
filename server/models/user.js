@@ -49,7 +49,7 @@ UserSchema.statics.findByToken = function(token){   //model methods get called w
     try{
         decoded = jwt.verify(token, process.env.JWT_SECRET);
     }catch(e){
-        return Promise.reject();
+        return Promise.reject(e);
     }
 
     return User.findById({
