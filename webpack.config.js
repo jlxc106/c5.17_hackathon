@@ -9,12 +9,11 @@ var HTMLWebpackPluginConfig = new HTMLWebpackPlugin({
 });
 
 module.exports = {
-  entry: {
+  entry: [
     //dev
     // 'webpack-dev-server/client?http://localhost:8080',
-    "bundle": __dirname + '/app.js',
-    "bundle.min": __dirname + '/app.js'
-},
+    __dirname + '/app.js',
+  ],
   module: {
     rules: [
       {
@@ -25,7 +24,7 @@ module.exports = {
     ]
   },
   output: {
-    filename: 'bundle.js',
+    filename: 'bundle.min.js',
     path: __dirname,
     publicPath: '/'
   },
