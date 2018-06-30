@@ -9,6 +9,7 @@ class OthelloDuo extends Component {
   constructor(props) {
     super(props);
     this._isMounted = false;
+    this.intervalKey;
     this.state = {
       gameState: {
         boardState: [
@@ -68,7 +69,12 @@ class OthelloDuo extends Component {
     });
 
     socket.on('initOthello', res => {
-      this.handleGameInit(res);
+      if(this._isMounted){
+        this.handleGameInit(res);
+      }
+      else{
+        this.intervalKey = setInterval(() => this.handleGameInit(res), 100)
+      }
     });
 
     socket.on('initNewGame', res => {
@@ -89,7 +95,18 @@ class OthelloDuo extends Component {
     this.debounced_mount();
   }
 
+  componentWillUnmount() {
+    this._isMounted = false;
+    this.debounced_mount.cancel();
+  }
+
   handleGameInit(res) {
+    if(!this._isMounted){
+      return;
+    }
+    if(this.intervalKey){
+      clearInterval(this.intervalKey);
+    }
     var { allowedMoves, boardState, userTurn, users } = res;
     var jediUserName, sithUserName;
     users.forEach(user => {
@@ -142,6 +159,23 @@ class OthelloDuo extends Component {
     });
   }
 
+  scrollToBottom(){
+    var messages = $('#messages');
+    var newMessage = messages.children('li:last-child');
+    var clientHeight = messages.prop('clientHeight');
+    var scrollTop = messages.prop('scrollTop');
+    var scrollHeight = messages.prop('scrollHeight');
+    var newMessageHeight = newMessage.innerHeight();
+    var lastMessageHeight = newMessage.prev().innerHeight();
+
+    if (
+      clientHeight + scrollTop + newMessageHeight + lastMessageHeight >=
+      scrollHeight
+    ) {
+      messages.scrollTop(scrollHeight);
+    }
+  }
+
   handleChatReceive(type, message) {
     if (!this._isMounted) {
       return;
@@ -173,7 +207,7 @@ class OthelloDuo extends Component {
             }
           }
         }
-      });
+      }, this.scrollToBottom);
     }
   }
 
@@ -203,7 +237,7 @@ class OthelloDuo extends Component {
               window.localStorage.setItem('token', response.id);
               this.props.history.push('/');
             } else {
-              if (!window.localStorage.getItem('userName')) {
+              if (!window.localStorage.getItem('userName') || response.userName !== window.localStorage.getItem('userName')) {
                 window.localStorage.setItem('userName', response.userName);
               }
               socket.emit('join', { token, gameId });
@@ -214,10 +248,7 @@ class OthelloDuo extends Component {
     }
   }
 
-  componentWillUnmount() {
-    this._isMounted = false;
-    this.debounced_mount.cancel();
-  }
+
 
   audioCallback() {
     var audio_dom = document.getElementById('sw_audio');
@@ -476,7 +507,7 @@ class OthelloDuo extends Component {
     });
 
     var message_li = this.state.chat.messageLog.map((message, index) => {
-      return <Message key={index} message={message[1]} type={message[0]} />;
+      return <Message key={index} message={message[1]} type={message[0]} user={this.state.gameState.players.sith.userName}/>;
     });
 
     var sithName, jediName;

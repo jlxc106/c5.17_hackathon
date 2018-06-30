@@ -102,7 +102,6 @@ button{
 }
 
 #invalid-name-warning{
-    /* display: none; */
     font-size: 20px;
     color: red;
 }
@@ -417,7 +416,8 @@ body{
 
 .li-server-message{
     font-size: 15px;
-    background: #f2f2f2
+    background: #f2f2f2;
+    font-weight: bolder;
 }
 
 .li-message{

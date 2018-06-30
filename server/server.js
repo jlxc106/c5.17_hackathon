@@ -5,12 +5,8 @@ const socketIO = require('socket.io');
 const http = require('http');
 var fs = require('fs');
 const _ = require('lodash');
-// const moment = require('moment');
 const { ObjectID } = require('mongodb');
-// var memwatch = require('memwatch-next');
-// const jwt = require('jsonwebtoken');
 
-// var { mongoose } = require('./db/mongoose');
 const { User } = require('./models/user');
 const { Othello } = require('./othello/othello');
 const { OthelloModel } = require('./models/othello_model');
@@ -24,11 +20,11 @@ const port = process.env.PORT || 3000;
 
 
 //production
-// app.use(express.static(publicPath2));
+app.use(express.static(publicPath2));
 
-// app.get("/*", (req, res)=>{
-//   res.sendFile(path.resolve(__dirname, "..", "index.html"));
-// })
+app.get("/*", (req, res)=>{
+  res.sendFile(path.resolve(__dirname, "..", "index.html"));
+})
 
 // app.use(express.static(publicPath));
 var othello = new Othello();
@@ -46,7 +42,6 @@ app.use((req, res, next) => {
 
 io.on('connection', socket => {
   socket.on('validateUser', (response, callback) => {
-    console.log('49 validateUser', response);
     if (!response.token || response.token == "undefined") {
       console.log('no token. creating new user');
       var user = new User({
@@ -63,10 +58,8 @@ io.on('connection', socket => {
         err => console.log('error: ', err)
       );
     } else {
-      console.log('the usual find that ho');
       User.findByToken(response.token)
         .then(userDoc => {
-          console.log('69', userDoc)
           if (!userDoc) {
             console.log('tainted token. creating new user');
             var user = new User({
@@ -83,14 +76,12 @@ io.on('connection', socket => {
               err => console.log('error: ', err)
             );
           }else{
-            console.log('86 update that user mang',)
             User.findByIdAndUpdate(
                 { _id: userDoc._id },
                 { socketId: socket.id },
                 { new: true },
                 (err, doc) => {
                   if (err || !doc) {
-                    // console.log(err);
                     console.log('tainted token. creating new user');
                     var user = new User({
                       _id: new ObjectID(),
@@ -106,20 +97,18 @@ io.on('connection', socket => {
                       err => console.log('error: ', err)
                     );
                   } else {
-                    console.log(`welcome back ${doc.userName} socket # ${socket.id}`);
-                    // console.log(`welcome back ${doc}`);
+                    console.log(`welcome back ${doc.userName}`);
                     callback(null, doc);
                   }
                 }
               );
           }
         })
-        .catch(err => console.log('113' ,err));
+        .catch(err => console.log(err));
     }
   });
 
   socket.on('join', response => {
-    console.log(response);
     User.findByToken(response.token)
       .then(doc => {
         socket.join(doc.roomId);
@@ -129,7 +118,6 @@ io.on('connection', socket => {
           if(err || !gameObj){
             return console.log(err);
           }
-          // console.log('117 pre initOthello gameObj', gameObj);
           socket.emit('initOthello', {
             role: doc.role,
             users: usersInGame,
@@ -148,7 +136,6 @@ io.on('connection', socket => {
   });
 
   socket.on('searchOthello', (response, callback) => {
-    console.log(151, response);
     if (response.userName.trim().length > 0) {
       User.findByToken(response.token).then(doc => {
         User.findByIdAndUpdate(
@@ -156,18 +143,15 @@ io.on('connection', socket => {
           { userName: response.userName },
           { new: true },
           (err, result) => {
-            console.log('searchothello result: ', result);
             if (err || !result) {
               console.log('unable to find user');
               return;
             } else if (othello.addUserToWaitingList(result)) {
-              console.log(164, result);
               const gameId = new ObjectID().toHexString();
               othello
                 .addUsersToGame(gameId)
                 .then(players => {
                   players.forEach(player => {
-                    console.log('emit foundgame', player)
                     if (player.socketId !== socket.id) {
                       socket
                         .to(player.socketId)
@@ -209,7 +193,6 @@ io.on('connection', socket => {
                         {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
                       ],
                       allowedMoves: [{'row': 2, 'col': 3}, {'row': 3, 'col': 2}, {'row': 4, 'col': 5}, {'row': 5, 'col': 4}]
-                      // [2,3], [3,2], [4,5], [5,4]
                     }
                   });
                   othelloGame.save();
@@ -225,18 +208,13 @@ io.on('connection', socket => {
   });
 
   socket.on('setMove', (res, callback) => {
-    console.log('222', res);
-      // console.log('201 ', res);
     OthelloModel.findById(res.gameId).then(othelloGame => {
-        console.log('225 ', othelloGame);
         if((othelloGame.gameState.userTurn ==='sith' && res.role === 'black') || (othelloGame.gameState.userTurn ==='jedi' && res.role === 'white')){
           othelloGame.validateMove(res.role, res.position);
           return othelloGame;
         }
-        console.log('invalid turn');
         throw new Error('not user turn')
     }).then(othelloGame =>{
-      console.log(233, othelloGame);
       var resObj = {
         allowedMoves: othelloGame.gameState.allowedMoves,
         boardState: othelloGame.gameState.boardState,
@@ -244,9 +222,7 @@ io.on('connection', socket => {
       }
       socket.to(res.gameId).emit('getMove', resObj)
       callback(null, resObj)
-      // console.log(othelloGame);
-      if(othelloGame.gameState.winner.role){
-        // console.log('winner poggers');
+      if(othelloGame.gameState.winner.role && othelloGame.gameState.winner.role !== 'tie'){
         var usersInGame = othello.getActiveUsers(res.gameId);
         io.in(res.gameId).emit('gameOver', {
           winner: othelloGame.gameState.winner.role
@@ -256,17 +232,22 @@ io.on('connection', socket => {
           message: `User ${othelloGame.gameState.winner.userName} has won!`,
           activeUsers: usersInGame
         });
-
       }
-
+      else if(othelloGame.gameState.winner.role === 'tie'){
+        var usersInGame = othello.getActiveUsers(res.gameId);
+        io.in(res.gameId).emit('gameOver', {
+          winner: othelloGame.gameState.winner.role
+        })
+        io.in(res.gameId).emit('serverMessage', {
+          from: 'server',
+          message: `Tie game!`,
+          activeUsers: usersInGame
+        });
+      }
     }).catch(err => console.log(err));
-    // socket.to(res.gameId).emit('getMove', res);
-    // io.in(res.gameId).emit("getMove",res);
-    // callback(null, res);
   });
 
   socket.on('requestNewGame', (response)=>{
-    console.log('requestnewGame', response);
     User.findByToken(response.token).then(user =>{
       var swRole = response.role === 'black' ? 'sith' : 'jedi';
       OthelloModel.findById(response.gameId).then(othelloGame =>{
@@ -314,17 +295,14 @@ io.on('connection', socket => {
   });
 
   socket.on('disconnect', () => {
-    console.log(`user disconnected`);
     var disconnected_user = othello.disconnectUser({ socketId: socket.id });
-    //   var user = user
     if (disconnected_user) {
       io.to(disconnected_user.roomId).emit('serverMessage', {
         from: 'server',
         message: `User ${disconnected_user.userName} has disconnected`,
         activeUsers: othello.getActiveUsers(disconnected_user.roomId)
       });
-      console.log('send disconnect msg: ', disconnected_user.userName);
-      //   console.log('room occupants: ' , othello.getActiveUsers(disconnected_user.roomId));
+      console.log(`User ${disconnected_user.userName} disconnected`);
     }
   });
 });
@@ -332,17 +310,3 @@ io.on('connection', socket => {
 server.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
-
-// memwatch.on('leak', function(info){
-//   console.log('-------------leak info--------');
-//   console.log(info);
-//   console.log('--------------------------------------')
-// })
-
-
-// memwatch.on('stats', function(stats){
-//   console.log('-------------leak info--------');
-//   console.log(stats);
-//   console.log('--------------------------------------')
-// })
-

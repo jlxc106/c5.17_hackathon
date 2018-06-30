@@ -9,7 +9,7 @@ var HTMLWebpackPluginConfig = new HTMLWebpackPlugin({
 module.exports = {
   entry: [
     //dev
-    'webpack-dev-server/client?http://localhost:8080',
+    // 'webpack-dev-server/client?http://localhost:8080',
     __dirname + '/app.js'
   ],
   module: {
@@ -40,6 +40,6 @@ module.exports = {
   watchOptions: {
     ignored: /node_modules/,
   },
-  mode: 'development',
+  mode: 'production',
   plugins: [HTMLWebpackPluginConfig]
 };

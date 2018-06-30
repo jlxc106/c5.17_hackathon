@@ -42,7 +42,7 @@ UserSchema.methods.generateAuthToken = function(){
     return token;
 }
 
-UserSchema.statics.findByToken = function(token){   //model methods get called with model as this binded
+UserSchema.statics.findByToken = function(token){
     var User = this;
     var decoded;
 
