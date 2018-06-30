@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import io from 'socket.io-client';
-let socket = io(`http://1v1me.io:3000`);
+let socket = io(`http://localhost:3000`);
 
 class HomePage extends Component {
   constructor(props) {
