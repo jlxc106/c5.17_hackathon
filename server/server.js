@@ -41,6 +41,7 @@ app.use((req, res, next) => {
 
 io.on('connection', socket => {
   socket.on('validateUser', (response, callback) => {
+    console.log('validate user');
     if (!response.token || response.token == "undefined") {
       console.log('no token. creating new user');
       var user = new User({
@@ -135,6 +136,7 @@ io.on('connection', socket => {
   });
 
   socket.on('searchOthello', (response, callback) => {
+    console.log('139 searchothello');
     if (response.userName.trim().length > 0) {
       User.findByToken(response.token).then(doc => {
         User.findByIdAndUpdate(
@@ -151,6 +153,7 @@ io.on('connection', socket => {
                 .addUsersToGame(gameId)
                 .then(players => {
                   players.forEach(player => {
+                    console.log('foundothellogame');
                     if (player.socketId !== socket.id) {
                       socket
                         .to(player.socketId)

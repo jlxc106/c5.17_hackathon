@@ -18,6 +18,7 @@ class HomePage extends Component {
     this.changeView = this.changeView.bind(this);
 
     socket.on('foundOthelloGame', response => {
+      console.log('foundothellogame');
       var gameId = response.gameId;
       if (gameId !== window.localStorage.getItem('gameId')) {
         window.localStorage.setItem('gameId', gameId);
@@ -44,6 +45,7 @@ class HomePage extends Component {
   }
 
   handleUserVerification() {
+    console.log('verify');
     if (this._isMounted) {
       this.setState(
         {
@@ -77,6 +79,7 @@ class HomePage extends Component {
     this.setState({ showInvalidNameText: false });
     findButton.html('Looking for game...');
     findButton.attr('disabled', true);
+    console.log('searchothello')
     socket.emit(
       'searchOthello',
       {
