@@ -8,7 +8,7 @@ var HTMLWebpackPluginConfig = new HTMLWebpackPlugin({
 
 module.exports = {
   entry: [
-    'webpack-dev-server/client?http://localhost:8080',
+ //   'webpack-dev-server/client?http://localhost:8080',
     __dirname + '/app.js'
   ],
   module: {
@@ -22,7 +22,8 @@ module.exports = {
   },
   output: {
     filename: 'bundle.js',
-    path: path.join(__dirname, '/dist')
+    path: __dirname,
+    publicPath: '/'
   },
   devServer: {
     hot: true,
