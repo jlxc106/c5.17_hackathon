@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import _ from 'lodash';
 import io from 'socket.io-client';
 let socket = io(`http://localhost:3000`);
 
 class HomePage extends Component {
   constructor(props) {
     super(props);
-
+    this._isMounted = false;
     this.state = {
       viewPanel: 'selectGame',
       userName: null,
@@ -16,23 +17,15 @@ class HomePage extends Component {
     this.handleBackButton = this.handleBackButton.bind(this);
     this.changeView = this.changeView.bind(this);
 
-    socket.on('connect', () => {
-      // if(this.state.)
-      const token = this.state.token || window.localStorage.getItem('token') || null;
-      // const token = window.localStorage.getItem('token')
-      //   ? window.localStorage.getItem('token')
-      //   : null;
-      // console.log(token);
-      socket.emit('validateUser', { token: token }, function(err, response) {
-        if (err && response.token) {
-          // console.log(err);
-          window.localStorage.setItem('token', response.token);
-        } else if (response.userName && response.userName !== 'anon') {
-          window.localStorage.setItem('userName', response.userName);
-        }
-      });
+    socket.on('foundOthelloGame', response => {
+      var gameId = response.gameId;
+      if (gameId !== window.localStorage.getItem('gameId')) {
+        window.localStorage.setItem('gameId', gameId);
+      }
+      this.props.history.push('/othello_duo');
     });
 
+    this.debounced_mount = _.debounce(this.handleUserVerification, 200);
     this.handleOnSubmit = this.handleOnSubmit.bind(this);
   }
 
@@ -41,31 +34,47 @@ class HomePage extends Component {
   }
 
   componentDidMount() {
-    this.setState({
-      userName: window.localStorage.getItem('userName')
-        ? window.localStorage.getItem('userName')
-        : null,
-      token: window.localStorage.getItem('token')
-        ? window.localStorage.getItem('token')
-        : null
-    });
-    // var userName = window.localStorage.getItem('userName');
-    // if (userName !== 'anon' && userName && userName.length > 0) {
-
-      // $('#input-name').attr('placeholder', userName);
-    // }
-    // console.log(userName);
+    this._isMounted = true;
+    this.debounced_mount();
   }
 
-  handleOnSubmit() {
+  componentWillUnmount() {
+    this._isMounted = false;
+    this.debounced_mount.cancel();
+  }
+
+  handleUserVerification() {
+    if (this._isMounted) {
+      this.setState(
+        {
+          userName: window.localStorage.getItem('userName') || null,
+          token: window.localStorage.getItem('token') || null
+        },
+        () => {
+          socket.emit('validateUser', { token: this.state.token }, function(
+            err,
+            response
+          ) {
+            if (err && response.token) {
+              window.localStorage.setItem('token', response.token);
+            } else if (response.userName && response.userName !== 'anon') {
+              window.localStorage.setItem('userName', response.userName);
+            }
+          });
+        }
+      );
+    }
+  }
+
+  handleOnSubmit(event) {
+    event.preventDefault();
     let userName = $('#input-name').val();
     let findButton = $('#submit-user-info');
     if (!userName || userName.trim().length < 1) {
-      // console.log('invalid user name');
-      this.setState({showInvalidNameText: true})
+      this.setState({ showInvalidNameText: true });
       return;
     }
-    this.setState({showInvalidNameText: false})
+    this.setState({ showInvalidNameText: false });
     findButton.html('Looking for game...');
     findButton.attr('disabled', true);
     socket.emit(
@@ -75,9 +84,10 @@ class HomePage extends Component {
         token: window.localStorage.getItem('token')
       },
       function(err, response) {
-        console.log(response);
         if (err) {
           console.log(`error finding game`);
+        } else {
+          window.localStorage.setItem('userName', userName);
         }
       }
     );
@@ -88,20 +98,12 @@ class HomePage extends Component {
   }
 
   render() {
-
-    var {showInvalidNameText, userName } = this.state;
+    var { showInvalidNameText, userName } = this.state;
 
     let invalidNameText = 'hideWarningText';
-    if(showInvalidNameText){
+    if (showInvalidNameText) {
       invalidNameText = 'showWarningText';
     }
-
-    socket.on('foundOthelloGame', response => {
-      console.log(response);
-      var gameId = response.gameId;
-      window.localStorage.setItem('gameId', gameId);
-      this.props.history.push('/othello_duo');
-    });
 
     let { viewPanel } = this.state;
     let panelDOM = null;
@@ -155,7 +157,6 @@ class HomePage extends Component {
               name="numPlayers"
               value="2"
               type="button"
-              disabled
               onClick={() => this.changeView('collectUserInfo')}
             >
               Two Player
@@ -166,7 +167,10 @@ class HomePage extends Component {
     } else if (viewPanel === 'collectUserInfo') {
       panelDOM = (
         <div id="collect-player-info">
-          <form id="user-info-form">
+          <form
+            id="user-info-form"
+            onSubmit={event => this.handleOnSubmit(event)}
+          >
             <div className="form-field">
               <label htmlFor="">Display name</label>
               <input
@@ -176,13 +180,15 @@ class HomePage extends Component {
                 placeholder={userName}
                 autoFocus={true}
               />
-              <span id="invalid-name-warning" className={invalidNameText}>invalid user name</span>
+              <span id="invalid-name-warning" className={invalidNameText}>
+                invalid user name
+              </span>
             </div>
             <button
               id="submit-user-info"
               className="active-btn"
               type="button"
-              onClick={this.handleOnSubmit}
+              onClick={event => this.handleOnSubmit(event)}
             >
               Find a game
             </button>

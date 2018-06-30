@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-// import OthelloBoard from './othelloBoard';
 import Row from './row';
 class OthelloSolo extends Component {
   constructor(props) {
     super(props);
     this.list = null;
-    this.col_list = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     this.state = {
       winner: null,
       showModal: false,
@@ -306,7 +304,6 @@ class OthelloSolo extends Component {
       winner = 'player 2';
     } else {
       winner = 'tie';
-      console.log('handle a tie scenario result');
     }
     this.setState({
       winner,
@@ -315,13 +312,10 @@ class OthelloSolo extends Component {
   }
 
   handleUserTurn(row, column) {
-    // console.log(`called handleUserTurn from ${row} and ${column}`);
     if (this.state.boardState[row][column] !== 'a') {
       return;
-      // console.log('allowed move clicked')
     }
     var copyOfBoard = this.state.boardState.slice();
-    // console.log(copyOfBoard);
     if (this.state.turn === 'player 1') {
       copyOfBoard[row][column] = 'b';
       copyOfBoard = this.flip(row, column, 'b', 'w', copyOfBoard);
@@ -336,12 +330,9 @@ class OthelloSolo extends Component {
         },
         () => {
           if (this.state.player1.length + this.state.player2.length === 64) {
-            // console.log('game over');
             this.handleGameOver();
           }
-          // console.log(this.state);
           if (this.state.legal_moves_array.length === 0) {
-            // console.log('---alternate turn------', this.state)
             copyOfBoard = this.legalMoves(copyOfBoard, 'b');
             this.setState({
               turn: this.alternateTurn(),
@@ -365,12 +356,9 @@ class OthelloSolo extends Component {
         },
         () => {
           if (this.state.player1.length + this.state.player2.length === 64) {
-            // console.log('game over');
             this.handleGameOver();
           }
-          // console.log(this.state);
           if (this.state.legal_moves_array.length === 0) {
-            // console.log('---alternate turn------', this.state)
             copyOfBoard = this.legalMoves(copyOfBoard, 'w');
             this.setState({
               turn: this.alternateTurn(),
@@ -384,15 +372,22 @@ class OthelloSolo extends Component {
   }
 
   render() {
-    let displayJediWin = '', displaySithWin = '';
-    if(this.state.showModal){
-      if(this.state.winner === 'player 1'){
-        displaySithWin = 'showModal';
-      }
-      else if(this.state.winner === 'player 2'){
-        displayJediWin = 'showModal';
-      }
+    var gameOverModal = null;
+    if(this.state.winner === 'player 2' && this.state.showModal){
+      gameOverModal =  <div id="contain-jedi-gif" className='modal' onClick={this.hideModal}>
+        <div className="jedi-win-gif" />
+      </div>    
+    }else if(this.state.winner === 'player 1' && this.state.showModal){
+      gameOverModal =  <div id="contain-sith-gif" className='modal' onClick={this.hideModal}>
+        <div className="sith-win-gif" />
+      </div>
+    } else if(this.state.winner === 'tie' && this.state.showModal){
+      gameOverModal =  <div id="contain-jedi-gif" className='modal' onClick={this.hideModal}>
+      <div className="jedi-win-gif" />
+    </div> 
     }
+
+
     let jedi_opacity = 'opacity_1';
     let sith_opacity = 'opacity_1';
     if (this.state.turn === 'player 1') {
@@ -413,7 +408,7 @@ class OthelloSolo extends Component {
     });
 
     return (
-      <div className="col-xs-12 othello">
+      <div className="col-xs-12 othello forest_background">
         <audio
           id="sw_audio"
           className="audio_class"
@@ -476,20 +471,7 @@ class OthelloSolo extends Component {
             </button>
           </div>
         </div>
-        <div
-          id='contain-sith-gif'
-          className={'modal ' + displaySithWin}
-          onClick={this.hideModal}
-        >
-          <div className="sith-win-gif" />
-        </div>
-        <div
-          id='contain-jedi-gif'
-          className={'modal ' + displayJediWin}
-          onClick={this.hideModal}
-        >
-          <div className="jedi-win-gif" />
-        </div>
+        {gameOverModal}
       </div>
     );
   }
