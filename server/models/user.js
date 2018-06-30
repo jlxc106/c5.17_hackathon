@@ -42,14 +42,14 @@ UserSchema.methods.generateAuthToken = function(){
     return token;
 }
 
-UserSchema.statics.findByToken = function(token){   //model methods get called with model as this binded
+UserSchema.statics.findByToken = function(token){
     var User = this;
     var decoded;
 
     try{
         decoded = jwt.verify(token, process.env.JWT_SECRET);
     }catch(e){
-        return Promise.reject();
+        return Promise.reject(e);
     }
 
     return User.findById({
