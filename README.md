@@ -17,8 +17,7 @@
 * MERN Stack completed
 * Solo/Duo Othello game modes fully functional
 * Implement chat feature using socket.io
-* Upload to production server
-* 
+* Uploaded to production server
 
 ### May 27, 2018
 * initial commit
@@ -30,3 +29,6 @@
 * Othello AI
 * Research AI
 * Clean up CSS/styling
+
+### Notes
+* For testing two player mode of Othello, queue up from two different browsers or a regular & incognito window to emulate two different players.
