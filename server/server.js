@@ -148,7 +148,7 @@ io.on('connection', socket => {
   });
 
   socket.on('searchOthello', (response, callback) => {
-    // console.log(response);
+    console.log(151, response);
     if (response.userName.trim().length > 0) {
       User.findByToken(response.token).then(doc => {
         User.findByIdAndUpdate(
@@ -156,16 +156,18 @@ io.on('connection', socket => {
           { userName: response.userName },
           { new: true },
           (err, result) => {
-            // console.log('searchothello result: ', result);
+            console.log('searchothello result: ', result);
             if (err || !result) {
               console.log('unable to find user');
               return;
             } else if (othello.addUserToWaitingList(result)) {
+              console.log(164, result);
               const gameId = new ObjectID().toHexString();
               othello
                 .addUsersToGame(gameId)
                 .then(players => {
                   players.forEach(player => {
+                    console.log('emit foundgame', player)
                     if (player.socketId !== socket.id) {
                       socket
                         .to(player.socketId)
