@@ -1,4 +1,6 @@
 const path = require('path');
+const webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 var HTMLWebpackPlugin = require('html-webpack-plugin');
 var HTMLWebpackPluginConfig = new HTMLWebpackPlugin({
   template: __dirname + '/index.html',
@@ -7,11 +9,12 @@ var HTMLWebpackPluginConfig = new HTMLWebpackPlugin({
 });
 
 module.exports = {
-  entry: [
+  entry: {
     //dev
     // 'webpack-dev-server/client?http://localhost:8080',
-    __dirname + '/app.js'
-  ],
+    "bundle": __dirname + '/app.js',
+    "bundle.min": __dirname + '/app.js'
+},
   module: {
     rules: [
       {
@@ -40,6 +43,14 @@ module.exports = {
   devtool: 'inline-source-map',
   watchOptions: {
     ignored: /node_modules/,
+  },
+  optimization:{
+    minimize: true,
+    minimizer:[
+      new UglifyJsPlugin({
+        include: /\.min\.js$/
+      })
+    ]
   },
   mode: 'production',
   plugins: [HTMLWebpackPluginConfig]
