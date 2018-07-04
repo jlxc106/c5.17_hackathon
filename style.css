@@ -244,13 +244,7 @@ body{
             -2px -2px white,
             2px 2px 5px white;
 }
-/* #player-imageOne,
-#player-imageTwo {
-    width: 150px;
-    height: auto;
-    border: 3px solid black;
-    box-shadow: 0 0 30px 2px whitesmoke;
-} */
+
 #reset-button{
     margin-top: 20px;
     display: inline-block;
