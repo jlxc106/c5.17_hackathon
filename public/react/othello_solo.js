@@ -67,7 +67,7 @@ class OthelloSolo extends Component {
       [0, 1],
       [1, 1]
     ];
-    let temp_directions = [
+    var temp_directions = [
       [-1, -1],
       [0, -1],
       [1, -1],
@@ -77,17 +77,17 @@ class OthelloSolo extends Component {
       [0, 1],
       [1, 1]
     ];
-    let arrayOfFlips = [];
+    var arrayOfFlips = [];
     for (
       var directionIndex = 0;
       directionIndex < directions.length;
       directionIndex++
     ) {
-      let path = [];
-      let dRow = directions[directionIndex][0];
-      let dColumn = directions[directionIndex][1];
-      let temp_row = row + dRow;
-      let temp_column = column + dColumn;
+      var path = [];
+      var dRow = directions[directionIndex][0];
+      var dColumn = directions[directionIndex][1];
+      var temp_row = row + dRow;
+      var temp_column = column + dColumn;
       if (this.withinBounds(temp_row, temp_column)) {
         var cellTracker = this.state.boardState[temp_row][temp_column];
         if (cellTracker === color_to_replace) {
@@ -110,8 +110,8 @@ class OthelloSolo extends Component {
               temp_directions[directionIndex][0] + dRow;
             temp_directions[directionIndex][1] =
               temp_directions[directionIndex][1] + dColumn;
-            let temp_dRow = row + temp_directions[directionIndex][0];
-            let temp_dColumn = column + temp_directions[directionIndex][1];
+            var temp_dRow = row + temp_directions[directionIndex][0];
+            var temp_dColumn = column + temp_directions[directionIndex][1];
             if (!this.withinBounds(temp_dRow, temp_dColumn)) {
               break;
             }
@@ -133,8 +133,8 @@ class OthelloSolo extends Component {
   }
 
   legalMoves(board, color) {
-    let returnBoard = board.slice();
-    let colNum, rowNum;
+    var returnBoard = board.slice();
+    var colNum, rowNum;
     for (var i = 0; i < 8; i++) {
       for (var j = 0; j < 8; j++) {
         if (board[i][j] === 'a') {
@@ -207,7 +207,7 @@ class OthelloSolo extends Component {
       [-1, 1],
       [1, 1]
     ];
-    let temp_diag_directions = [
+    var temp_diag_directions = [
       [0, 1],
       [0, -1],
       [-1, 0],
@@ -218,12 +218,12 @@ class OthelloSolo extends Component {
       [1, 1]
     ];
     for (var i = 0; i < diag.length; i++) {
-      var var1 = diag[i][0];
-      var var2 = diag[i][1];
-      var var3 = diag[i][0] + row;
-      var var4 = diag[i][1] + column;
-      if (this.withinBounds(var3, var4)) {
-        var checkCell = board[var3][var4];
+      var dRow = diag[i][0];
+      var dColumn = diag[i][1];
+      var tempRow = diag[i][0] + row;
+      var tempColumn = diag[i][1] + column;
+      if (this.withinBounds(tempRow, tempColumn)) {
+        var checkCell = board[tempRow][tempColumn];
         if (checkCell === color_to_replace) {
           temp_diag_directions = [
             [0, 1],
@@ -236,8 +236,8 @@ class OthelloSolo extends Component {
             [1, 1]
           ];
           while (checkCell === color_to_replace) {
-            temp_diag_directions[i][0] = temp_diag_directions[i][0] + var1;
-            temp_diag_directions[i][1] = temp_diag_directions[i][1] + var2;
+            temp_diag_directions[i][0] = temp_diag_directions[i][0] + dRow;
+            temp_diag_directions[i][1] = temp_diag_directions[i][1] + dColumn;
             var tempr = row + temp_diag_directions[i][0];
             var tempc = column + temp_diag_directions[i][1];
             if (!this.withinBounds(tempr, tempc)) {
@@ -255,7 +255,7 @@ class OthelloSolo extends Component {
   }
 
   findPlayerCells(color, board) {
-    let playerList = [];
+    var playerList = [];
     for (var rowIndex = 0; rowIndex < 8; rowIndex++) {
       for (var colIndex = 0; colIndex < 8; colIndex++) {
         if (board[rowIndex][colIndex] === color) {
@@ -270,7 +270,6 @@ class OthelloSolo extends Component {
     this.setState({
       winner: null,
       showModal: false,
-      //player1 is black -- player2 is white
       player1: [[3, 4], [4, 3]],
       player2: [[3, 3], [4, 4]],
       turn: 'player 1',
@@ -295,9 +294,9 @@ class OthelloSolo extends Component {
   }
 
   handleGameOver() {
-    let winner = null;
-    let player1_score = this.state.player1.length;
-    let player2_score = this.state.player2.length;
+    var winner = null;
+    var player1_score = this.state.player1.length;
+    var player2_score = this.state.player2.length;
     if (player1_score > player2_score) {
       winner = 'player 1';
     } else if (player2_score > player1_score) {
@@ -388,8 +387,8 @@ class OthelloSolo extends Component {
     }
 
 
-    let jedi_opacity = 'opacity_1';
-    let sith_opacity = 'opacity_1';
+    var jedi_opacity = 'opacity_1';
+    var sith_opacity = 'opacity_1';
     if (this.state.turn === 'player 1') {
       jedi_opacity = 'opacity_05';
     } else {

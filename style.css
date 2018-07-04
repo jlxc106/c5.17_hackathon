@@ -258,7 +258,7 @@ body{
 .button{
     height: 50px;
     border-radius: 30px;
-    font-size: 30px;
+    font-size: 2vw;
     font-family: coolFont;
     color: white;
     background-color: black;
