@@ -192,9 +192,10 @@ class HomePage extends Component {
               type="button"
               onClick={event => this.handleOnSubmit(event)}
             >
-              Find a game
+              Find a game*
             </button>
           </form>
+          <span>*For testing two player mode of Othello, queue up from two different browsers or a regular & incognito window to emulate two different players.</span>
         </div>
       );
     }
