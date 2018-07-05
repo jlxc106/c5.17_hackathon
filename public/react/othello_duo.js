@@ -512,6 +512,7 @@ class OthelloDuo extends Component {
           rowItem={rowItem}
           rowNum={key}
           callback={this.handleUserTurn}
+          turn='player'
         />
       );
     });

@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Cell = (props) =>{
-    const {value, rowNum, colNum, callback} = props;
+    const {value, rowNum, colNum, callback, turn} = props;
     const col_list =['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     let classIdentifier = "";
     if(value === "w"){
@@ -10,8 +10,10 @@ const Cell = (props) =>{
     else if(value ==="b"){
         classIdentifier = "black-disc";
     }
-    else if(value === "a"){
+    else if(value === "a" && turn!== 'bot'){
         classIdentifier = "allowedSpot"
+    }else if(value ==='a' && turn ==='bot'){
+        classIdentifier = '';
     }
     
     return (

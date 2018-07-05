@@ -7,10 +7,10 @@ class OthelloSolo extends Component {
     this.state = {
       winner: null,
       showModal: false,
-      //player1 is black -- player2 is white
-      player1: [[3, 4], [4, 3]],
-      player2: [[3, 3], [4, 4]],
-      turn: 'player 1',
+      //player is black -- bot is white
+      player: [[3, 4], [4, 3]],
+      bot: [[3, 3], [4, 4]],
+      turn: 'player',
       legal_moves_array: [[2, 3], [3, 2], [4, 5], [5, 4]],
       boardState: [
         ['0', '0', '0', '0', '0', '0', '0', '0'],
@@ -30,10 +30,10 @@ class OthelloSolo extends Component {
   }
 
   alternateTurn() {
-    if (this.state.turn === 'player 1') {
-      return 'player 2';
+    if (this.state.turn === 'player') {
+      return 'bot';
     }
-    return 'player 1';
+    return 'player';
   }
 
   audioCallback() {
@@ -270,9 +270,9 @@ class OthelloSolo extends Component {
     this.setState({
       winner: null,
       showModal: false,
-      player1: [[3, 4], [4, 3]],
-      player2: [[3, 3], [4, 4]],
-      turn: 'player 1',
+      player: [[3, 4], [4, 3]],
+      bot: [[3, 3], [4, 4]],
+      turn: 'player',
       legal_moves_array: [[2, 3], [3, 2], [4, 5], [5, 4]],
       boardState: [
         ['0', '0', '0', '0', '0', '0', '0', '0'],
@@ -315,14 +315,14 @@ class OthelloSolo extends Component {
       return;
     }
     var copyOfBoard = this.state.boardState.slice();
-    if (this.state.turn === 'player 1') {
+    if (this.state.turn === 'player') {
       copyOfBoard[row][column] = 'b';
       copyOfBoard = this.flip(row, column, 'b', 'w', copyOfBoard);
       copyOfBoard = this.legalMoves(copyOfBoard, 'w');
       this.setState(
         {
-          player1: this.findPlayerCells('b', copyOfBoard),
-          player2: this.findPlayerCells('w', copyOfBoard),
+          player: this.findPlayerCells('b', copyOfBoard),
+          bot: this.findPlayerCells('w', copyOfBoard),
           turn: this.alternateTurn(),
           legal_moves_array: this.findPlayerCells('a', copyOfBoard),
           boardState: copyOfBoard
@@ -369,6 +369,11 @@ class OthelloSolo extends Component {
       );
     }
   }
+
+  handleAITurn(){
+    
+  }
+
 
   render() {
     var gameOverModal = null;
