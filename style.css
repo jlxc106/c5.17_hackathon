@@ -197,8 +197,11 @@ body{
     background-color: #27660c;
     border: 2px solid black;
     display: inline-block;
-    height: 70px;
-    width: 70px;
+    height: 6vh;
+    width: 6vh;
+    /* min-height: 5vh;
+    max-height: 6.5vh; */
+    /* width: 6.5vh; */
 }
 .game-contents{
     text-align: center;
@@ -391,7 +394,7 @@ body{
 }
 
 #message-form{
-    width: 95%;
+    width: 100%;
     margin: auto;
     padding-top: 6px;
 }
@@ -399,6 +402,8 @@ body{
     display: inline-block;
     font-weight: bold;
     max-width: 18%;
+    margin-left: 5px;
+    font-size: 1em;
 }
 
 .chat{
@@ -446,10 +451,10 @@ body{
     color: white;
 }
 @media only screen and (max-width: 1000px){
-    #back-board > div > div{
+    /* #back-board > div > div{
         height: 7vw;
         width: 7vw;
-    }
+    } */
 
     #contain-chat-input{
         max-width: 78%
