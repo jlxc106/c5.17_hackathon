@@ -3,9 +3,9 @@ import _ from 'lodash';
 import Row from './row';
 import Message from './message';
 import io from 'socket.io-client';
-let socket = io(`http://1v1me.io`);
+// let socket = io(`http://1v1me.io`);
 //dev
-// let socket = io(`http://localhost:3000`);
+let socket = io(`http://localhost:3000`);
 
 class OthelloDuo extends Component {
   constructor(props) {

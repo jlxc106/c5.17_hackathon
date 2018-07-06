@@ -20,11 +20,11 @@ const port = process.env.PORT || 3000;
 
 
 //production
-app.use(express.static(publicPath2));
+// app.use(express.static(publicPath2));
 
-app.get("/*", (req, res)=>{
-  res.sendFile(path.resolve(__dirname, "..", "index.html"));
-})
+// app.get("/*", (req, res)=>{
+//   res.sendFile(path.resolve(__dirname, "..", "index.html"));
+// })
 
 var othello = new Othello();
 

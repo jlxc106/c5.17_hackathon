@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import io from 'socket.io-client';
-let socket = io(`http://1v1me.io`);
+// let socket = io(`http://1v1me.io`);
 //dev
-// let socket = io(`http://localhost:3000`);
+let socket = io(`http://localhost:3000`);
 
 class HomePage extends Component {
   constructor(props) {
@@ -192,10 +192,12 @@ class HomePage extends Component {
               type="button"
               onClick={event => this.handleOnSubmit(event)}
             >
-              Find a game*
+              Find a game
             </button>
           </form>
-          <span>*For testing two player mode of Othello, queue up from two different browsers or a regular & incognito window to emulate two different players.</span>
+          <div>          
+            <a id="duo_queue_link" href="https://github.com/jlxc106/c5.17_hackathon#notes" target="_blank">instructions</a>
+          </div>
         </div>
       );
     }

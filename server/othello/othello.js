@@ -34,7 +34,8 @@ class Othello {
   }
 
   addUserToWaitingList(user) {
-    this.waitingList = this.waitingList.filter(waitingUser => waitingUser.socketId !== user.socketId); //prevents same user from making two requests
+    console.log('37 user, ', user)
+    this.waitingList = this.waitingList.filter(waitingUser => waitingUser.socketId !== user.socketId || waitingUser._id === user._id); //prevents same user from making two requests
     this.waitingList.push(user);
     if (this.waitingList.length > 1) {
       return true;
