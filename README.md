@@ -13,6 +13,10 @@
 
 ## Change log
 
+### July 6, 2018
+* implement deep copy to copy embedded arrays by value
+* implement minmax tree based algorithm for AI moves
+
 ### July 5, 2018
 * amend to match making to prevent self-queue
 * update css

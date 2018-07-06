@@ -11,7 +11,7 @@ var HTMLWebpackPluginConfig = new HTMLWebpackPlugin({
 module.exports = {
   entry: [
     //dev
-    'webpack-dev-server/client?http://localhost:8080',
+    // 'webpack-dev-server/client?http://localhost:8080',
     __dirname + '/app.js',
   ],
   module: {
@@ -25,8 +25,8 @@ module.exports = {
   },
   output: {
     //dev
-    filename: 'bundle.js',
-    // filename: 'bundle.min.js',
+    // filename: 'bundle.js',
+    filename: 'bundle.min.js',
     path: __dirname,
     publicPath: '/'
   },
@@ -45,15 +45,15 @@ module.exports = {
   watchOptions: {
     ignored: /node_modules/,
   },
-  // optimization:{
-  //   minimize: true,
-  //   minimizer:[
-  //     new UglifyJsPlugin({
-  //       include: /\.min\.js$/
-  //     })
-  //   ]
-  // },
-  // mode: 'production',
-  mode: 'development',
+  optimization:{
+    minimize: true,
+    minimizer:[
+      new UglifyJsPlugin({
+        include: /\.min\.js$/
+      })
+    ]
+  },
+  mode: 'production',
+  // mode: 'development',
   plugins: [HTMLWebpackPluginConfig]
 };

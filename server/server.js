@@ -10,7 +10,7 @@ const { ObjectID } = require('mongodb');
 const { User } = require('./models/user');
 const { Othello } = require('./othello/othello');
 const { OthelloModel } = require('./models/othello_model');
-const publicPath = path.join(__dirname, '../public');
+// const publicPath = path.join(__dirname, '../public');
 const publicPath2 = path.join(__dirname, '..')
 const app = express();
 var server = http.createServer(app);
@@ -20,11 +20,11 @@ const port = process.env.PORT || 3000;
 
 
 //production
-// app.use(express.static(publicPath2));
+app.use(express.static(publicPath2));
 
-// app.get("/*", (req, res)=>{
-//   res.sendFile(path.resolve(__dirname, "..", "index.html"));
-// })
+app.get("/*", (req, res)=>{
+  res.sendFile(path.resolve(__dirname, "..", "index.html"));
+})
 
 var othello = new Othello();
 
