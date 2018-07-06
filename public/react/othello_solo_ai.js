@@ -132,8 +132,86 @@ class OthelloSolo extends Component {
     return copyOfBoard;
   }
 
+  countFlips(row, column, color, color_to_replace, copyOfBoard) {
+    const directions = [
+      [-1, -1],
+      [0, -1],
+      [1, -1],
+      [-1, 0],
+      [1, 0],
+      [-1, 1],
+      [0, 1],
+      [1, 1]
+    ];
+    var temp_directions = [
+      [-1, -1],
+      [0, -1],
+      [1, -1],
+      [-1, 0],
+      [1, 0],
+      [-1, 1],
+      [0, 1],
+      [1, 1]
+    ];
+    var arrayOfFlips = [];
+    for (
+      var directionIndex = 0;
+      directionIndex < directions.length;
+      directionIndex++
+    ) {
+      var path = [];
+      var dRow = directions[directionIndex][0];
+      var dColumn = directions[directionIndex][1];
+      var temp_row = row + dRow;
+      var temp_column = column + dColumn;
+      if (this.withinBounds(temp_row, temp_column)) {
+        var cellTracker = this.state.boardState[temp_row][temp_column];
+        if (cellTracker === color_to_replace) {
+          temp_directions = [
+            [-1, -1],
+            [0, -1],
+            [1, -1],
+            [-1, 0],
+            [1, 0],
+            [-1, 1],
+            [0, 1],
+            [1, 1]
+          ];
+          while (cellTracker === color_to_replace) {
+            path.push([
+              row + temp_directions[directionIndex][0],
+              column + temp_directions[directionIndex][1]
+            ]);
+            temp_directions[directionIndex][0] =
+              temp_directions[directionIndex][0] + dRow;
+            temp_directions[directionIndex][1] =
+              temp_directions[directionIndex][1] + dColumn;
+            var temp_dRow = row + temp_directions[directionIndex][0];
+            var temp_dColumn = column + temp_directions[directionIndex][1];
+            if (!this.withinBounds(temp_dRow, temp_dColumn)) {
+              break;
+            }
+            cellTracker = this.state.boardState[temp_dRow][temp_dColumn];
+            if (cellTracker === color) {
+              arrayOfFlips = arrayOfFlips.concat(path);
+              break;
+            }
+          }
+        }
+      }
+    }
+    return arrayOfFlips.length;
+    // for (var index = 0; index < arrayOfFlips.length; index++) {
+    //   var flipRow = arrayOfFlips[index][0];
+    //   var flipColumn = arrayOfFlips[index][1];
+    //   copyOfBoard[flipRow][flipColumn] = color;
+    // }
+    // return copyOfBoard;
+  }
+
+
   legalMoves(board, color) {
-    var returnBoard = board.slice();
+    var returnBoard = this.copyBoard(board);
     var colNum, rowNum;
     for (var i = 0; i < 8; i++) {
       for (var j = 0; j < 8; j++) {
@@ -295,12 +373,12 @@ class OthelloSolo extends Component {
 
   handleGameOver() {
     var winner = null;
-    var player1_score = this.state.player1.length;
-    var player2_score = this.state.player2.length;
-    if (player1_score > player2_score) {
-      winner = 'player 1';
-    } else if (player2_score > player1_score) {
-      winner = 'player 2';
+    var player_score = this.state.player.length;
+    var bot_score = this.state.bot.length;
+    if (player_score > bot_score) {
+      winner = 'player';
+    } else if (bot_score > player_score) {
+      winner = 'bot';
     } else {
       winner = 'tie';
     }
@@ -310,78 +388,145 @@ class OthelloSolo extends Component {
     })
   }
 
-  handleUserTurn(row, column) {
-    if (this.state.boardState[row][column] !== 'a') {
-      return;
+  copyBoard(board){
+    var newBoard = [];
+    for(var i=0; i<board.length; i++){
+        var row = board[i].slice();
+        newBoard.push(row);
     }
-    var copyOfBoard = this.state.boardState.slice();
+    return newBoard;
+  }
+
+
+  handleUserTurn(row, column, userInduced = false) {
+    if (this.state.boardState[row][column] !== 'a' || userInduced && this.state.turn === 'bot') {
+        return;
+    }
+    var copyOfBoard = this.copyBoard(this.state.boardState);
     if (this.state.turn === 'player') {
       copyOfBoard[row][column] = 'b';
       copyOfBoard = this.flip(row, column, 'b', 'w', copyOfBoard);
       copyOfBoard = this.legalMoves(copyOfBoard, 'w');
-      this.setState(
-        {
-          player: this.findPlayerCells('b', copyOfBoard),
-          bot: this.findPlayerCells('w', copyOfBoard),
-          turn: this.alternateTurn(),
-          legal_moves_array: this.findPlayerCells('a', copyOfBoard),
-          boardState: copyOfBoard
-        },
-        () => {
-          if (this.state.player1.length + this.state.player2.length === 64) {
-            this.handleGameOver();
-          }
-          if (this.state.legal_moves_array.length === 0) {
-            copyOfBoard = this.legalMoves(copyOfBoard, 'b');
-            this.setState({
-              turn: this.alternateTurn(),
-              legal_moves_array: this.findPlayerCells('a', copyOfBoard),
-              boardState: copyOfBoard
-            });
-          }
-        }
-      );
-    } else {
+      if(this.findPlayerCells('a', copyOfBoard).length > 0){
+        this.setState({
+            player: this.findPlayerCells('b', copyOfBoard),
+            bot: this.findPlayerCells('w', copyOfBoard),
+            turn: this.alternateTurn(),
+            legal_moves_array: this.findPlayerCells('a', copyOfBoard),
+            boardState: copyOfBoard
+        }, () =>{
+            if(this.state.player.length + this.state.bot.length === 64){
+                this.handleGameOver();
+                return;
+            } else{
+                // trigger bot's turn
+                var botMove = this.handleAITurn();
+                setTimeout(()=>{
+                    this.handleUserTurn(botMove[0], botMove[1]);
+                }, 1000)
+            }
+
+        })
+      }else{
+        copyOfBoard = this.legalMoves(copyOfBoard, 'b');
+        this.setState({
+            player: this.findPlayerCells('b', copyOfBoard),
+            bot: this.findPlayerCells('w', copyOfBoard),
+            legal_moves_array: this.findPlayerCells('a', copyOfBoard),
+            boardState: copyOfBoard
+        }, () =>{
+            if(this.state.player.length + this.state.bot.length === 64){
+                this.handleGameOver();
+                return;
+            }
+        })
+      }
+    } else {    //bot move
       copyOfBoard[row][column] = 'w';
       copyOfBoard = this.flip(row, column, 'w', 'b', copyOfBoard);
       copyOfBoard = this.legalMoves(copyOfBoard, 'b');
-      this.setState(
-        {
-          player1: this.findPlayerCells('b', copyOfBoard),
-          player2: this.findPlayerCells('w', copyOfBoard),
-          turn: this.alternateTurn(),
-          legal_moves_array: this.findPlayerCells('a', copyOfBoard),
-          boardState: copyOfBoard
-        },
-        () => {
-          if (this.state.player1.length + this.state.player2.length === 64) {
-            this.handleGameOver();
-          }
-          if (this.state.legal_moves_array.length === 0) {
+        if(this.findPlayerCells('a', copyOfBoard).length > 0){
+            this.setState({
+                player: this.findPlayerCells('b', copyOfBoard),
+                bot: this.findPlayerCells('w', copyOfBoard),
+                turn: this.alternateTurn(),
+                legal_moves_array: this.findPlayerCells('a', copyOfBoard),
+                boardState: copyOfBoard
+            }, () =>{
+                if(this.state.player.length + this.state.bot.length === 64){
+                    console.log(1);
+                    this.handleGameOver();
+                    return;
+                }
+            })
+        }else{
             copyOfBoard = this.legalMoves(copyOfBoard, 'w');
             this.setState({
-              turn: this.alternateTurn(),
-              legal_moves_array: this.findPlayerCells('a', copyOfBoard),
-              boardState: copyOfBoard
-            });
-          }
+                player: this.findPlayerCells('b', copyOfBoard),
+                bot: this.findPlayerCells('w', copyOfBoard),
+                legal_moves_array: this.findPlayerCells('a', copyOfBoard),
+                boardState: copyOfBoard
+            }, () =>{
+                if(this.findPlayerCells('a', copyOfBoard).length === 0 || this.state.player.length + this.state.bot.length === 64){
+                    console.log(2);
+                    this.handleGameOver();
+                    return;
+                }                
+                else{
+                    // trigger bot's turn
+                    var botMove = this.handleAITurn();
+                    setTimeout(()=>{
+                        this.handleUserTurn(botMove[0], botMove[1]);
+                    }, 1000)
+                }
+            })
         }
-      );
     }
   }
 
   handleAITurn(){
-    
+    if(this.state.turn !== 'bot' || this.state.player.length + this.state.bot.length === 64){
+        console.log('not bot turn')
+        return;
+    }
+    var someObj = [];
+    var copyOfBoard = this.copyBoard(this.state.boardState);
+    var optimalMove;
+    var max_flipped;
+    for(var i=0; i<this.state.legal_moves_array.length; i++){
+        max_flipped = 0;
+        copyOfBoard = this.copyBoard(this.state.boardState);
+        var move = this.state.legal_moves_array[i];
+        var row = move[0];
+        var column = move[1];
+        copyOfBoard[row][column] = 'w';
+        copyOfBoard = this.flip(row, column, 'w', 'b', copyOfBoard);
+        copyOfBoard = this.legalMoves(copyOfBoard, 'b');
+        var legal_moves_array = this.findPlayerCells('a', copyOfBoard);
+        legal_moves_array.forEach((legalMove)=>{
+            var legalMove_row = legalMove[0];
+            var legalMove_col = legalMove[1];
+            var num_flipped = this.countFlips(legalMove_row, legalMove_col, 'b','w', copyOfBoard);
+            max_flipped = max_flipped > num_flipped ? max_flipped : num_flipped;
+        })
+        someObj.push({board: copyOfBoard, value: max_flipped, row, column})
+        optimalMove = optimalMove <= max_flipped ? optimalMove : max_flipped;
+    }
+    var returnVar = someObj.filter(obj => obj.value === optimalMove);
+    var returnRow = returnVar[0].row;
+    var returnCol = returnVar[0].column;
+    var abc = [returnRow, returnCol];
+    return abc;
   }
 
 
   render() {
     var gameOverModal = null;
-    if(this.state.winner === 'player 2' && this.state.showModal){
+    if(this.state.winner === 'bot' && this.state.showModal){
       gameOverModal =  <div id="contain-jedi-gif" className='modal' onClick={this.hideModal}>
         <div className="jedi-win-gif" />
       </div>    
-    }else if(this.state.winner === 'player 1' && this.state.showModal){
+    }else if(this.state.winner === 'player' && this.state.showModal){
       gameOverModal =  <div id="contain-sith-gif" className='modal' onClick={this.hideModal}>
         <div className="sith-win-gif" />
       </div>
@@ -394,7 +539,7 @@ class OthelloSolo extends Component {
 
     var jedi_opacity = 'opacity_1';
     var sith_opacity = 'opacity_1';
-    if (this.state.turn === 'player 1') {
+    if (this.state.turn === 'player') {
       jedi_opacity = 'opacity_05';
     } else {
       sith_opacity = 'opacity_05';
@@ -436,7 +581,7 @@ class OthelloSolo extends Component {
                 <p className="jedi-name">
                   Jedi<span />
                 </p>
-                <p className="jedi-score">{this.state.player2.length}</p>
+                <p className="jedi-score">{this.state.bot.length}</p>
               </div>
             </div>
             <div className="col-xs-offset-1 col-xs-2" id="reset-button">
@@ -458,7 +603,7 @@ class OthelloSolo extends Component {
                 <p className="sith-name">
                   Sith<span />
                 </p>
-                <p className="sith-score">{this.state.player1.length}</p>
+                <p className="sith-score">{this.state.player.length}</p>
               </div>
             </div>
           </div>

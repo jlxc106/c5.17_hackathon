@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 const _ = require('lodash')
-var {flip, updateAllowedMoves} = require('../game_logic/othello_logic');
+var {flip, updateAllowedMoves, copyBoard} = require('../game_logic/othello_logic');
 var ObjectId = mongoose.Schema.ObjectId;
 
 var OthelloSchema = new mongoose.Schema({
@@ -153,6 +153,7 @@ OthelloSchema.methods.validateMove = function(role, coordinates){
     var winner = null;
     var othelloGame = this;
     var userPiece, opponentPiece;
+    // var copyBoardState = copyBoard(this.gameState.boardState);
     var copyBoardState = this.gameState.boardState.slice();
     var moveIsValid = _.findIndex(othelloGame.gameState.allowedMoves, (move)=>{
         return move['row'] === coord_row && move['col'] === coord_col 

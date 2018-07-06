@@ -133,7 +133,7 @@ class OthelloSolo extends Component {
   }
 
   legalMoves(board, color) {
-    var returnBoard = board.slice();
+    var returnBoard = this.copyBoard(board);
     var colNum, rowNum;
     for (var i = 0; i < 8; i++) {
       for (var j = 0; j < 8; j++) {
@@ -310,11 +310,20 @@ class OthelloSolo extends Component {
     })
   }
 
+  copyBoard(board){
+    var newBoard = [];
+    for(var i=0; i<board.length; i++){
+        var row = board[i].slice();
+        newBoard.push(row);
+    }
+    return newBoard;
+  }
+
   handleUserTurn(row, column) {
     if (this.state.boardState[row][column] !== 'a') {
       return;
     }
-    var copyOfBoard = this.state.boardState.slice();
+    var copyOfBoard = this.copyBoard(this.state.boardState);
     if (this.state.turn === 'player 1') {
       copyOfBoard[row][column] = 'b';
       copyOfBoard = this.flip(row, column, 'b', 'w', copyOfBoard);

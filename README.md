@@ -13,6 +13,11 @@
 
 ## Change log
 
+### July 5, 2018
+* amend to match making to prevent self-queue
+* update css
+* start working on player vs AI mode
+
 ### June 30, 2018
 * MERN Stack completed
 * Solo/Duo Othello game modes fully functional

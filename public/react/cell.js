@@ -17,7 +17,7 @@ const Cell = (props) =>{
     }
     
     return (
-    <div className={classIdentifier} col={col_list[colNum]} row={rowNum} onClick={()=>{callback(rowNum, colNum)}}></div>
+    <div className={classIdentifier} col={col_list[colNum]} row={rowNum} onClick={()=>{callback(rowNum, colNum, true)}}></div>
     )
 }
 

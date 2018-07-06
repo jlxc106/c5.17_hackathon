@@ -23,6 +23,16 @@ var coordinateIsInArray = (row, column, allowedMovesArray) => {
   return isDuplicate;
 };
 
+
+var copyBoard = (board) => {
+  var newBoard = [];
+  for(var i=0; i<board.length; i++){
+      var row = board[i].slice();
+      newBoard.push(row);
+  }
+  return newBoard;
+}
+
 var flip = (boardState, coordinates, userPiece, opponentPiece) => {
   var row = parseInt(coordinates['row']);
   var column = parseInt(coordinates['col']);
@@ -164,4 +174,4 @@ var checkSurrounding = (boardState, userPiece, opponentPiece, row, col, allowedM
   });
 };
 
-module.exports = { flip, updateAllowedMoves };
+module.exports = { flip, updateAllowedMoves, copyBoard };

@@ -144,16 +144,19 @@ class HomePage extends Component {
                 Single Player
               </button>
             </Link>
-            <button
-              className="btn-choose-game othello-one-player"
-              name="numPlayers"
-              value="1"
-              disabled
-              data-toggle="tooltip"
-              title="coming soonTM"
-            >
-              Play AI
-            </button>
+            <Link to="/othello_solo_ai">
+              <button
+                className="btn-choose-game othello-one-player"
+                name="numPlayers"
+                value="1"
+                type="button"
+                // disabled
+                // data-toggle="tooltip"
+                // title="coming soonTM"
+              >
+                Play AI
+              </button>
+            </Link>
             <button
               className="active-btn btn-choose-game othello-two-player"
               name="numPlayers"
@@ -195,8 +198,14 @@ class HomePage extends Component {
               Find a game
             </button>
           </form>
-          <div>          
-            <a id="duo_queue_link" href="https://github.com/jlxc106/c5.17_hackathon#notes" target="_blank">instructions</a>
+          <div>
+            <a
+              id="duo_queue_link"
+              href="https://github.com/jlxc106/c5.17_hackathon#notes"
+              target="_blank"
+            >
+              instructions
+            </a>
           </div>
         </div>
       );
