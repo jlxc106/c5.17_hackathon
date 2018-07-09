@@ -54,14 +54,17 @@ button{
     margin: 3% auto;
 }
 
+#btn-last-duo-game{
+    font-size: 30px;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
 #center-container >  div{
     width: 100%;
     margin: 3px auto 3px;
 }
-
-/* #select-game-type, #btn-select-game-mode, #collect-player-info{
-    display: none;
-} */
 
 #collect-player-info{
     font-size: 30px;
@@ -129,6 +132,8 @@ button{
 #btn-select-game-mode{
     position: absolute;
     font-size: 30px;
+    left: 5px;
+    top: 5px;
 }
 
 #user-info-form > div{

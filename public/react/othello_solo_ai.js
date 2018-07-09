@@ -454,7 +454,6 @@ class OthelloSolo extends Component {
                 boardState: copyOfBoard
             }, () =>{
                 if(this.state.player.length + this.state.bot.length === 64){
-                    console.log(1);
                     this.handleGameOver();
                     return;
                 }
@@ -468,7 +467,6 @@ class OthelloSolo extends Component {
                 boardState: copyOfBoard
             }, () =>{
                 if(this.findPlayerCells('a', copyOfBoard).length === 0 || this.state.player.length + this.state.bot.length === 64){
-                    console.log(2);
                     this.handleGameOver();
                     return;
                 }                
@@ -486,7 +484,6 @@ class OthelloSolo extends Component {
 
   handleAITurn(){
     if(this.state.turn !== 'bot' || this.state.player.length + this.state.bot.length === 64){
-        console.log('not bot turn')
         return;
     }
     var someObj = [];

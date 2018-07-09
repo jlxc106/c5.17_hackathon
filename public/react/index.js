@@ -85,7 +85,7 @@ class HomePage extends Component {
         userName: userName,
         token: window.localStorage.getItem('token')
       },
-      function(err, response) {
+      function(err,response) {
         if (err) {
           console.log(`error finding game`);
         } else {
@@ -221,11 +221,18 @@ class HomePage extends Component {
       );
     }
 
+    let lastDuoGameButton = null;
+
+    if(window.localStorage.getItem('gameId') && window.localStorage.getItem('token') && window.localStorage.getItem('userName').length > 0 && this.state.viewPanel !== 'selectGame'){
+      lastDuoGameButton = <Link to="/othello_duo" ><button type="button" id="btn-last-duo-game">Last Duo Game</button></Link>
+    }
+
     return (
       <div id="particles-js">
         <script>{particlesJS.load('particles-js', 'particles.json')}</script>
         <div id="center-container">{panelDOM}</div>
         {button}
+        {lastDuoGameButton}
         <a
           href="https://www.youtube.com/watch?v=Ol3Id7xYsY4"
           id="othello-help"

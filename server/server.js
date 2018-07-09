@@ -11,13 +11,11 @@ const { User } = require('./models/user');
 const { Othello } = require('./othello/othello');
 const { OthelloModel } = require('./models/othello_model');
 // const publicPath = path.join(__dirname, '../public');
-const publicPath2 = path.join(__dirname, '..')
+const publicPath2 = path.join(__dirname, '..');
 const app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
 const port = process.env.PORT || 3000;
-
-
 
 //production
 app.use(express.static(publicPath2));
@@ -39,261 +37,344 @@ app.use((req, res, next) => {
   next();
 });
 
-io.on('connection', socket => {
-  socket.on('validateUser', (response, callback) => {
+io.on('connection', async socket => {
+  socket.on('validateUser', async (response, callback) => {
     console.log('validate user');
-    if (!response.token || response.token == "undefined") {
+    if (!response.token || response.token == 'undefined') {
       console.log('no token. creating new user');
       var user = new User({
         _id: new ObjectID(),
         socketId: socket.id
       });
-      user.save().then(
-        result => {
+      var result = await user.save();
+      try {
+        othello.connectUser(result);
+        const token = user.generateAuthToken();
+        callback('new user', { token: token });
+        return;
+      } catch (e) {
+        console.log('error: ', e);
+      }
+    } else {
+      var userDoc = await User.findByToken(response.token);
+      if (!userDoc) {
+        console.log('tained token. creating new user');
+        var user = new User({
+          _id: new ObjectID(),
+          socketId: socket.id
+        });
+        var result = await user.save;
+        try {
           othello.connectUser(result);
           const token = user.generateAuthToken();
           callback('new user', { token: token });
           return;
-        },
-        err => console.log('error: ', err)
-      );
-    } else {
-      User.findByToken(response.token)
-        .then(userDoc => {
-          if (!userDoc) {
-            console.log('tainted token. creating new user');
-            var user = new User({
-              _id: new ObjectID(),
-              socketId: socket.id
-            });
-            user.save().then(
-              result => {
+        } catch (e) {
+          console.log('error: ', e);
+        }
+      } else {
+        User.findByIdAndUpdate(
+          { _id: userDoc._id },
+          { socketId: socket.id },
+          { new: true },
+          async (err, doc) => {
+            if (err || !doc) {
+              console.log('tainted token. creating new user');
+              var user = new User({
+                _id: new ObjectID(),
+                socketId: socket.id
+              });
+              var result = await user.save();
+              try {
                 othello.connectUser(result);
                 const token = user.generateAuthToken();
                 callback('new user', { token: token });
                 return;
-              },
-              err => console.log('error: ', err)
-            );
-          }else{
-            User.findByIdAndUpdate(
-                { _id: userDoc._id },
-                { socketId: socket.id },
-                { new: true },
-                (err, doc) => {
-                  if (err || !doc) {
-                    console.log('tainted token. creating new user');
-                    var user = new User({
-                      _id: new ObjectID(),
-                      socketId: socket.id
-                    });
-                    user.save().then(
-                      result => {
-                        othello.connectUser(result);
-                        const token = user.generateAuthToken();
-                        callback('new user', { token: token });
-                        return;
-                      },
-                      err => console.log('error: ', err)
-                    );
-                  } else {
-                    console.log(`welcome back ${doc.userName}`);
-                    callback(null, doc);
-                  }
-                }
-              );
+              } catch (e) {
+                err => console.log('error: ', err);
+              }
+            } else {
+              console.log(`welcome back ${doc.userName}`);
+              callback(null, doc);
+            }
           }
-        })
-        .catch(err => console.log(err));
+        );
+      }
     }
   });
 
-  socket.on('join', response => {
-    User.findByToken(response.token)
-      .then(doc => {
-        socket.join(doc.roomId);
-        othello.connectUser(doc);
-        var usersInGame = othello.getActiveUsers(doc.roomId);
-        OthelloModel.findById(doc.roomId, (err, gameObj) =>{
-          if(err || !gameObj){
-            return console.log(err);
-          }
-          socket.emit('initOthello', {
-            role: doc.role,
-            users: usersInGame,
-            boardState: gameObj.gameState.boardState,
-            allowedMoves: gameObj.gameState.allowedMoves,
-            userTurn: gameObj.gameState.userTurn
-          });
-        })
-        socket.to(doc.roomId).emit('serverMessage', {
+  socket.on('join', async response => {
+    try{
+      var doc = await User.findByToken(response.token);
+      socket.join(doc.roomId);
+      othello.connectUser(doc);
+      var usersInGame = othello.getActiveUsers(doc.roomId);
+      OthelloModel.findById(doc.roomId, (err, gameObj) => {
+        if (err || !gameObj) {
+          return console.log(err);
+        }
+        socket.emit('initOthello', {
+          role: doc.role,
+          users: usersInGame,
+          boardState: gameObj.gameState.boardState,
+          allowedMoves: gameObj.gameState.allowedMoves,
+          userTurn: gameObj.gameState.userTurn
+        });
+      });
+      socket
+        .to(doc.roomId)
+        .emit('serverMessage', {
           from: 'server',
           message: `User ${doc.userName} has connected`,
           activeUsers: usersInGame
-        });
-      })
-      .catch(err => console.log(err));
+        })
+    }
+    catch(e){
+      console.log(e);
+    }
+
   });
 
-  socket.on('searchOthello', (response, callback) => {
-    console.log('139 searchothello');
+  socket.on('searchOthello', async (response, callback) => {
+    // console.log('139 searchothello');
     if (response.userName.trim().length > 0) {
-      User.findByToken(response.token).then(doc => {
+      try {
+        let doc = await User.findByToken(response.token);
         User.findByIdAndUpdate(
           { _id: ObjectID(doc._id) },
           { userName: response.userName },
           { new: true },
-          (err, result) => {
+          async (err, result) => {
             if (err || !result) {
               console.log('unable to find user');
               return;
             } else if (othello.addUserToWaitingList(result)) {
               const gameId = new ObjectID().toHexString();
-              othello
-                .addUsersToGame(gameId)
-                .then(players => {
-                  players.forEach(player => {
-                    console.log('foundothellogame');
-                    if (player.socketId !== socket.id) {
-                      socket
-                        .to(player.socketId)
-                        .emit('foundOthelloGame', {
-                          gameId: gameId
-                        });
-                    } else {
-                      socket.emit('foundOthelloGame', {
-                        gameId: gameId
-                      });
-                    }
+              var players = await othello.addUsersToGame(gameId);
+              players.forEach(player => {
+                if (player.socketId !== socket.id) {
+                  socket.to(player.socketId).emit('foundOthelloGame', {
+                    gameId: gameId
                   });
-                  return players;
-                })
-                .then(players => {
-                  var othelloGame = new OthelloModel({
-                    _id: ObjectID(gameId),
-                    players: {
-                      jedi: {
-                        userName: players[1].userName,
-                        _id: players[1]._id,
-                        socketId: players[1].socketId
-                      },
-                      sith: {
-                        userName: players[0].userName,
-                        _id: players[0]._id,
-                        socketId: players[0].socketId
-                      }
+                } else {
+                  socket.emit('foundOthelloGame', {
+                    gameId: gameId
+                  });
+                }
+              });
+              var othelloGame = new OthelloModel({
+                _id: ObjectID(gameId),
+                players: {
+                  jedi: {
+                    userName: players[1].userName,
+                    _id: players[1]._id,
+                    socketId: players[1].socketId
+                  },
+                  sith: {
+                    userName: players[0].userName,
+                    _id: players[0]._id,
+                    socketId: players[0].socketId
+                  }
+                },
+                gameState: {
+                  boardState: [
+                    {
+                      0: '0',
+                      1: '0',
+                      2: '0',
+                      3: '0',
+                      4: '0',
+                      5: '0',
+                      6: '0',
+                      7: '0'
                     },
-                    gameState: {
-                      boardState: [
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
-                        {0: '0', 1:'0', 2:'0', 3:'w', 4:'b', 5:'0', 6:'0', 7:'0'},
-                        {0: '0', 1:'0', 2:'0', 3:'b', 4:'w', 5:'0', 6:'0', 7:'0'},
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
-                        {0: '0', 1:'0', 2:'0', 3:'0', 4:'0', 5:'0', 6:'0', 7:'0'},
-                      ],
-                      allowedMoves: [{'row': 2, 'col': 3}, {'row': 3, 'col': 2}, {'row': 4, 'col': 5}, {'row': 5, 'col': 4}]
+                    {
+                      0: '0',
+                      1: '0',
+                      2: '0',
+                      3: '0',
+                      4: '0',
+                      5: '0',
+                      6: '0',
+                      7: '0'
+                    },
+                    {
+                      0: '0',
+                      1: '0',
+                      2: '0',
+                      3: '0',
+                      4: '0',
+                      5: '0',
+                      6: '0',
+                      7: '0'
+                    },
+                    {
+                      0: '0',
+                      1: '0',
+                      2: '0',
+                      3: 'w',
+                      4: 'b',
+                      5: '0',
+                      6: '0',
+                      7: '0'
+                    },
+                    {
+                      0: '0',
+                      1: '0',
+                      2: '0',
+                      3: 'b',
+                      4: 'w',
+                      5: '0',
+                      6: '0',
+                      7: '0'
+                    },
+                    {
+                      0: '0',
+                      1: '0',
+                      2: '0',
+                      3: '0',
+                      4: '0',
+                      5: '0',
+                      6: '0',
+                      7: '0'
+                    },
+                    {
+                      0: '0',
+                      1: '0',
+                      2: '0',
+                      3: '0',
+                      4: '0',
+                      5: '0',
+                      6: '0',
+                      7: '0'
+                    },
+                    {
+                      0: '0',
+                      1: '0',
+                      2: '0',
+                      3: '0',
+                      4: '0',
+                      5: '0',
+                      6: '0',
+                      7: '0'
                     }
-                  });
-                  othelloGame.save();
-                })
-                .catch(e => console.log(e));
+                  ],
+                  allowedMoves: [
+                    { row: 2, col: 3 },
+                    { row: 3, col: 2 },
+                    { row: 4, col: 5 },
+                    { row: 5, col: 4 }
+                  ]
+                }
+              });
+              othelloGame.save();
             }
           }
         );
-      });
+      } catch (e) {
+        console.log(e);
+      }
     } else {
       callback('invalid name');
     }
   });
 
-  socket.on('setMove', (res, callback) => {
-    OthelloModel.findById(res.gameId).then(othelloGame => {
-        if((othelloGame.gameState.userTurn ==='sith' && res.role === 'black') || (othelloGame.gameState.userTurn ==='jedi' && res.role === 'white')){
-          othelloGame.validateMove(res.role, res.position);
-          return othelloGame;
-        }
-        throw new Error('not user turn')
-    }).then(othelloGame =>{
+  socket.on('setMove', async (res, callback) => {
+    try{
+      var othelloGame = await OthelloModel.findById(res.gameId);
+      if ((othelloGame.gameState.userTurn === 'sith' && res.role === 'black') ||(othelloGame.gameState.userTurn === 'jedi' && res.role === 'white')) {
+        othelloGame.validateMove(res.role, res.position);
+      }
+      else{
+        throw new Error('not user turn');
+      }
       var resObj = {
         allowedMoves: othelloGame.gameState.allowedMoves,
         boardState: othelloGame.gameState.boardState,
         userTurn: othelloGame.gameState.userTurn
-      }
-      socket.to(res.gameId).emit('getMove', resObj)
-      callback(null, resObj)
-      if(othelloGame.gameState.winner.role && othelloGame.gameState.winner.role !== 'tie'){
+      };
+      socket.to(res.gameId).emit('getMove', resObj);
+      callback(null, resObj);
+      if (
+        othelloGame.gameState.winner.role &&
+        othelloGame.gameState.winner.role !== 'tie'
+      ) {
         var usersInGame = othello.getActiveUsers(res.gameId);
         io.in(res.gameId).emit('gameOver', {
           winner: othelloGame.gameState.winner.role
-        })
+        });
         io.in(res.gameId).emit('serverMessage', {
           from: 'server',
           message: `User ${othelloGame.gameState.winner.userName} has won!`,
           activeUsers: usersInGame
         });
-      }
-      else if(othelloGame.gameState.winner.role === 'tie'){
+      } else if (othelloGame.gameState.winner.role === 'tie') {
         var usersInGame = othello.getActiveUsers(res.gameId);
         io.in(res.gameId).emit('gameOver', {
           winner: othelloGame.gameState.winner.role
-        })
+        });
         io.in(res.gameId).emit('serverMessage', {
           from: 'server',
           message: `Tie game!`,
           activeUsers: usersInGame
         });
       }
-    }).catch(err => console.log(err));
+    }
+    catch(e){
+      console.log(e);
+    }
   });
 
-  socket.on('requestNewGame', (response)=>{
-    User.findByToken(response.token).then(user =>{
+  socket.on('requestNewGame', async response => {
+    try {
+      var user = await User.findByToken(response.token);
       var swRole = response.role === 'black' ? 'sith' : 'jedi';
-      OthelloModel.findById(response.gameId).then(othelloGame =>{
-        othelloGame.players[swRole].resetGamePressed = new Date().valueOf();
-        if(othelloGame.players.jedi.resetGamePressed && othelloGame.players.sith.resetGamePressed && Math.abs(othelloGame.players.jedi.resetGamePressed - othelloGame.players.sith.resetGamePressed < 600000)){
-          othelloGame.initNewGame();
-          othelloGame.save().then(othello =>{
-            io.in(response.gameId).emit('initNewGame', othello);
-          })
-        }else{
-          othelloGame.save();
-        }
-      })
-
+      var othelloGame = await OthelloModel.findById(response.gameId);
+      othelloGame.players[swRole].resetGamePressed = new Date().valueOf();
+      if (
+        othelloGame.players.jedi.resetGamePressed &&
+        othelloGame.players.sith.resetGamePressed &&
+        Math.abs(
+          othelloGame.players.jedi.resetGamePressed -
+            othelloGame.players.sith.resetGamePressed <
+            600000
+        )
+      ) {
+        othelloGame.initNewGame();
+        var othello = await othelloGame.save();
+        io.in(response.gameId).emit('initNewGame', othello);
+      } else {
+        othelloGame.save();
+      }
       socket.to(response.gameId).emit('confirmNewGame', {
         userName: user.userName
-      })
-    }).catch(err => console.log(err));
-  })
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  });
 
-  socket.on('startNewGame', (response)=>{
-    OthelloModel.findById(response.gameId).then(othelloGame =>{
-      othelloGame.initNewGame();
-      othelloGame.save().then(othello =>{
-        io.in(response.gameId).emit('initNewGame', othello);
-      })
-    })
+  socket.on('startNewGame', async response => {
+    let othelloGame = await OthelloModel.findById(response.gameId);
+    othelloGame.initNewGame();
+    let othello = await othelloGame.save();
+    io.in(response.gameId).emit('initNewGame', othello);
+  });
 
-  })
-
-
-  socket.on('newMessage', (response, callback) => {
-    User.findByToken(response.token)
-      .then(userDoc => {
-        io.to(response.gameId).emit('sendMessage', {
-          obj: userDoc,
-          from: userDoc.userName,
-          role: userDoc.role,
-          message: response.message,
-          activeUsers: othello.getActiveUsers(userDoc.roomId)
-        });
-        callback();
-      })
-      .catch(err => callback(err));
+  socket.on('newMessage', async (response, callback) => {
+    try {
+      let userDoc = await User.findByToken(response.token);
+      io.to(response.gameId).emit('sendMessage', {
+        obj: userDoc,
+        from: userDoc.userName,
+        role: userDoc.role,
+        message: response.message,
+        activeUsers: othello.getActiveUsers(userDoc.roomId)
+      });
+      callback();
+    } catch (e) {
+      console.log(e);
+    }
   });
 
   socket.on('disconnect', () => {
