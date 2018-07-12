@@ -199,13 +199,11 @@ class HomePage extends Component {
             </button>
           </form>
           <div>
-            <a
-              id="duo_queue_link"
-              href="https://github.com/jlxc106/c5.17_hackathon#notes"
-              target="_blank"
-            >
-              instructions
-            </a>
+          <i className="fas fa-info-circle"
+            id="info-circle"
+            data-toggle="tooltip"
+            title="For testing two player mode of Othello, queue up from two different browsers or a regular & incognito window to emulate two different players.">
+          </i>
           </div>
         </div>
       );

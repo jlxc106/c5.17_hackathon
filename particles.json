@@ -29,7 +29,7 @@
     "move": {
       "enable": true,
       "speed": 5,
-      "direction": "none",
+      "direction": "bottom-right",
       "random": true,
       "straight": false,
       "out_mode": "out",
